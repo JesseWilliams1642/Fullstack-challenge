@@ -1,4 +1,4 @@
-# Backend Developer Challenge - Appointment Booking System
+# Fullstack developer Challenge - Appointment Booking System
 
 Dear developer,
 
