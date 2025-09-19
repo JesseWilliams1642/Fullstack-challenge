@@ -1,6 +1,6 @@
 # Fullstack developer Challenge - Appointment Booking System
 
-Dear developer,
+Dear Developer,
 
 Welcome to the Full-Stack Developer Candidate Test. This test aims to assess your full-stack development skills, approach to complex scheduling logic, and ability to write clean, maintainable code. Below, you will find the details and requirements for this test.
 
