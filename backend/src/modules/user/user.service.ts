@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "./user.model"
-import { Appointment } from "../appointment/appointment.model";
+import { User } from "./user.entity"
+import { Appointment } from "../appointment/appointment.entity";
 
 @Injectable()
 export class UserService {
     
     addAppointment(user: User, appointmentType: string) {
-        const appointment = new Appointment("0", appointmentType);
+        const appointment = new Appointment(appointmentType, user);
         user.appointments = [...user.appointments, appointment];
         return user;
     }
@@ -38,5 +38,5 @@ export class UserService {
 
     // Patch changes specific values. Put values replaces the whole object
     // Delete
-    
+
 }
