@@ -36,7 +36,6 @@ Your task is to develop a complete online appointment booking system with a robu
 * **Frontend**: React with TypeScript
 * **Database**: PostgreSQL or any relational database of your choice
 * **UI Library**: Ant Design (antd) for consistent UI components
-* **Authentication**: JWT-based authentication system
 * **Version Control**: Git for source code management
 
 
