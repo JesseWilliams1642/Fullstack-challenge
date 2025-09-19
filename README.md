@@ -55,14 +55,14 @@ To focus on the core scheduling logic, you can pre-populate the database with th
 
 ### **Test User Accounts:**
 * **Customer 1**:
-    - Email: `customer1@test.com`
-    - Password: `password123`
+    - Email: `customer1@sampleassist.com`
+    - Password: `password@123`
 * **Customer 2**:
-    - Email: `customer2@test.com`
-    - Password: `password123`
+    - Email: `customer2@sampleassist.com`
+    - Password: `password@123`
 * **Customer 3**:
-    - Email: `admin@test.com`
-    - Password: `admin123`
+    - Email: `admin@sampleassist.com`
+    - Password: `admin@123`
 
 ### **Pre-defined Services:**
 * **Haircut** - 30 minutes
@@ -93,10 +93,10 @@ To focus on the core scheduling logic, you can pre-populate the database with th
 
 * Set up database with the required schema
 * **Seed the database with pre-defined users and services** (use the test data provided above)
-* Implement the core scheduling algorithm for availability calculation
+* Implement the core scheduling functions for availability calculation
 * Create a functional React frontend that demonstrates the complete booking flow
 * **Authentication can use the pre-defined test accounts** - no need to implement registration if you prefer to focus on scheduling logic
-* Update the README file with clear setup instructions and your approach to the scheduling algorithm
+* Update the README file with clear setup instructions and your approach to the scheduling functions
 * Include database seeding instructions and test account credentials
 * Paste the branch name into the system and indicate the completion of the test
 * Feel free to provide us with feedback regarding the test
@@ -105,7 +105,7 @@ To focus on the core scheduling logic, you can pre-populate the database with th
 
 We will assess the following aspects of your solution:
 
-* **Core Scheduling Logic**: Accuracy and efficiency of the availability calculation algorithm
+* **Core Scheduling Logic**: Accuracy and efficiency of the availability calculation functions
 * **Full-Stack Integration**: Seamless communication between frontend and backend
 * **Code Quality**: Clean, maintainable, and well-structured code
 * **Database Design**: Proper schema design and query optimisation
@@ -123,7 +123,7 @@ We will assess the following aspects of your solution:
     * Clear setup and installation instructions
     * **Database seeding/migration instructions for pre-defined data**
     * Database schema setup guide
-    * Explanation of your scheduling algorithm approach
+    * Explanation of your scheduling functions approach
     * API documentation
     * **List of pre-defined test accounts and services**
     * Any assumptions or design decisions made
