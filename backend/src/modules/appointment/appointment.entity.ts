@@ -5,13 +5,13 @@ import { User } from '../user/user.entity';
 export class Appointment {
 
     @PrimaryGeneratedColumn("uuid", { name: "id" })
-    id: string;
+    id!: string;
 
     @Column({ name: "service_type", type: "varchar", nullable: false })
-    serviceType: string;
+    serviceType!: string;
 
     @ManyToOne(() => User, user => user.appointments)
-    user: User;
+    user!: User;
 
     constructor(
         serviceType: string,
