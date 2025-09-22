@@ -8,25 +8,25 @@ import { hashPassword } from "src/utils/hash";
 export class UserService {
     
     constructor(
-        @Inject('USER_REPOSITORY') private userRespository: Repository<User>,
+        @Inject('USER_REPOSITORY') private userRepository: Repository<User>,
         @Inject('APPOINTMENT_REPOSITORY') private appointmentRepository: Repository<Appointment>
     ) {}
 
     async createUser(email: string, password: string, name: string): Promise<User> {
 
-        const newUser: User = this.userRespository.create({
+        const newUser: User = this.userRepository.create({
             email: email,
             hashedPassword: await hashPassword(password),
             name: name
         })
 
-        return await this.userRespository.save(newUser);
+        return await this.userRepository.save(newUser);
 
     }
 
     async addAppointment(email: string, serviceType: string): Promise<User> {
 
-        const user: User | null = await this.userRespository.findOneBy({ email: email });
+        const user: User | null = await this.userRepository.findOneBy({ email: email });
         if (!user) throw new Error(`User could not be found for email ${email}.`);
 
         const newAppointment: Appointment = this.appointmentRepository.create({
@@ -37,13 +37,13 @@ export class UserService {
         const appointment: Appointment = await this.appointmentRepository.save(newAppointment);
 
         user.appointments = [...user.appointments || [], appointment];
-        return await this.userRespository.save(user);
+        return await this.userRepository.save(user);
 
     }
 
     async getAppointments(email: string): Promise<Appointment[]> {
 
-        const user: User | null = await this.userRespository.findOne({
+        const user: User | null = await this.userRepository.findOne({
             where: { email: email },
             relations: ['appointments']
         });
@@ -58,13 +58,12 @@ export class UserService {
 
     async getLimitedAppointments(email: string, numAppointments: string): Promise<Appointment[]> {
 
+        // Don't need to check if returnSize is a number as ParseIntPipe checks
+        // for us in user.controller.ts
         let returnSize: number = Number(numAppointments);
-        if (isNaN(returnSize)) 
-            throw new Error("Number of appointments is not a number.");
-        if (returnSize < 0)
-            throw new Error("Number must be positive.")
+        if (returnSize < 0) throw new Error("Id should be a positive integer.");
 
-        const user: User | null = await this.userRespository.findOne({
+        const user: User | null = await this.userRepository.findOne({
             where: { email: email },
             relations: ['appointments']
         });
