@@ -53,11 +53,6 @@ export class UserController {
 
     }
 
-
-
-
-
-
     @Get('appointments')
     async getAppointments(
         @Body('email') email: string
