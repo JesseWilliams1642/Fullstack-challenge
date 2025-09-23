@@ -1,7 +1,8 @@
 #!/bin/bash
 
 cat ./frontend/.env > .env
-cat ./backend/.env > .env
+echo >> .env                     # Needed to goto new line
+cat ./backend/.env >> .env
 sort -u .env -o .env            # Remove duplicate variables
 
 # $@ allows us to add more options/tags on the end
