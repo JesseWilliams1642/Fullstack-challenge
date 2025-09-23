@@ -43,21 +43,21 @@ services:
     networks:
       - app-network
   
-  #frontend:
-  #  container_name: challenge_frontend
-  #  platform: ${DOCKER_PLATFORM}
-  #  env_file: "frontend/.env"
-  #  build:
-  #    context: ./frontend
-  #    dockerfile: Dockerfile
-  #  ports:
-  #    - '5553:5553'
-  #  volumes:
-  #    - ./frontend:/app
-  #  depends_on:
-  #    backend
-  #  networks:
-  #    - app-network
+  frontend:
+    container_name: challenge_frontend
+    platform: ${DOCKER_PLATFORM}
+    env_file: "frontend/.env"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      backend
+    networks:
+      - app-network
 
 volumes:
   postgres-data:
