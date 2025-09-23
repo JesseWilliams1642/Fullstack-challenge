@@ -11,6 +11,7 @@ import { AppointmentModule } from "../appointment/appointment.module";
     providers: [
         UserService,
         UserProvider
-    ]
+    ],
+    exports: [UserProvider]
 })
 export class UserModule {};
