@@ -2,7 +2,7 @@ import { Injectable, Inject } from "@nestjs/common";
 import { User } from "./user.entity"
 import { Appointment } from "../appointment/appointment.entity";
 import { Repository } from "typeorm";
-import { hashPassword } from "src/utils/hash";
+import { hashPassword } from "../../utils/hash";
 
 @Injectable()
 export class UserService {
