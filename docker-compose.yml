@@ -50,12 +50,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        FRONTEND_PORT: ${FRONTEND_PORT}
     ports:
       - '${FRONTEND_PORT}:${FRONTEND_PORT}'
     volumes:
       - ./frontend:/app
     depends_on:
-      backend
+      - backend
     networks:
       - app-network
 
