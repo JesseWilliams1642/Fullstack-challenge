@@ -10,7 +10,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true                           // Removes any elements not defined
   }));                                        // in an expected request @Body type
-  app.enableCors();
+  app.enableCors({
+    origin: "http://localhost:" + process.env.VITE_FRONTEND_PORT
+  });
   await app.listen(port);
   console.log(`Backend server is running on http://localhost:${port}`);
 
