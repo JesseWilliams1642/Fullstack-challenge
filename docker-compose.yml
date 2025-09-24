@@ -42,6 +42,13 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /backend
+          ignore:
+            - node_modules
   
   frontend:
     container_name: challenge_frontend
@@ -56,10 +63,19 @@ services:
       - '${FRONTEND_PORT}:${FRONTEND_PORT}'
     volumes:
       - ./frontend:/app
+      - node_modules:/app/node_modules      # Stops a @rollup npm bug
     depends_on:
       - backend
     networks:
       - app-network
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /frontend
+          ignore:
+            - node_modules
 
 volumes:
   postgres-data:
+  node_modules: {}

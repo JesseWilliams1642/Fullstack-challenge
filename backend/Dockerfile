@@ -1,13 +1,12 @@
 FROM node:20-alpine
 
 WORKDIR /app
+COPY package*.json ./
+RUN npm i                  
 COPY . .
-RUN npm install
 
 # Expose the port, taking it from docker-compose.yml
-ARG BACKEND_PORT
-ENV BACKEND_PORT=${BACKEND_PORT}
-EXPOSE 5554 
+EXPOSE ${BACKEND_PORT}
 
 # Run the server
-CMD ["npm", "run", "start:dev"]
+CMD npm run start:dev
