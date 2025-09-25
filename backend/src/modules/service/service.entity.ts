@@ -10,11 +10,11 @@ export class Service {
     serviceName!: string;
 
     @Column({ name: "service_duration", type: "interval", nullable: false })
-    serviceDuration!: number;
+    serviceDuration!: string;
     
     constructor(
         serviceName: string,
-        serviceDuration: number
+        serviceDuration: string
     ) {
         this.serviceName = serviceName;
         this.serviceDuration = serviceDuration;
