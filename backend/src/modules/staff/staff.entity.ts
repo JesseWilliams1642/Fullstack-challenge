@@ -25,6 +25,9 @@ export class Staff {
     @Column({ name: "break_duration", type: "interval", nullable: false })
     breakDuration!: number;
 
+    @Column({ name: "buffer_period", type: "interval", nullable: false })
+    bufferPeriod!: number;
+
     constructor(
         name: string,
         startTime: string,
