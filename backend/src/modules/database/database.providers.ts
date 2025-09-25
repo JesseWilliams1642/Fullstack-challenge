@@ -1,6 +1,8 @@
 import { DataSource } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Appointment } from '../appointment/appointment.entity';
+import { Service } from '../service/service.entity';
+import { Staff } from '../staff/staff.entity';
 
 export const databaseProvider = {
 
@@ -17,7 +19,7 @@ export const databaseProvider = {
             username: process.env.DB_USERNAME || 'postgres',
             password: process.env.DB_PASSWORD || 'password',
             database: process.env.DB_NAME || 'db',
-            entities: [User, Appointment],
+            entities: [User, Appointment, Service, Staff],
             synchronize: true,
             logging: true
 
