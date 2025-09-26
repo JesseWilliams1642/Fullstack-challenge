@@ -7,7 +7,7 @@ import { hashPassword } from "../../common/utils";
 import { SafeUser } from "../../common/types";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
-import { checkAppointmentAvailability } from "../appointment/appointment.service";
+import { checkAppointmentAvailability, checkAppointmentOverlap } from "../appointment/appointment.service";
 
 @Injectable()
 export class UserService {
@@ -64,7 +64,14 @@ export class UserService {
         // Check if the appointment is still available
         const appointmentAvailable: boolean = await checkAppointmentAvailability(startDate, service, staff);
 
+        // Check if there is overlap with the user's pre-existing appointments
+        let appointmentOverlap: boolean = false;
+        if (user.appointments)
+            appointmentOverlap = await checkAppointmentOverlap(user.appointments, service, startDate);
+
         if (appointmentAvailable) {
+
+            if (appointmentOverlap) throw new Error("Appoint overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
 
             const newAppointment = new Appointment(
                 startDate,
