@@ -1,12 +1,12 @@
-import { Controller, Post, Body, Get, Param, ParseIntPipe, UseGuards, Req } from "@nestjs/common";
+import { Controller, Post, Body, Get, Param, ParseIntPipe, UseGuards, Req, HttpStatus, HttpCode } from "@nestjs/common";
 
 import { UserService } from "./user.service";
-import { User } from "./user.entity";
 import { Appointment } from "../appointment/appointment.entity";
-import type { SafeUser } from "../../common/types/safe-user.type";
-import { JwtGuard } from "../../common/guards/jwt.guard";
-import { GetUser } from "../../common/decorators/user.decorator";
+import type { SafeUser } from "../../common/types";
+import { JwtGuard } from "../../common/guards";
+import { GetUser } from "../../common/decorators";
 import { RegisterDTO } from "./dto";
+import { SafeAppointment } from "../appointment/types";
 
 // Note: Guards can be used at the controller level, as well as at the end-point level
 // @UseGuards(JwtGuard)
@@ -17,6 +17,7 @@ export class UserController {
 
     // @Body header tells the service which value from the request body we want to use! Really cool!
 
+    @HttpCode(HttpStatus.CREATED)
     @Post('register')
     async addUser(
         @Body() dto: RegisterDTO
@@ -37,7 +38,7 @@ export class UserController {
     /*
 
     // Testing out auth
-
+    
     @UseGuards(JwtGuard)
     @Post('appointments')
     async addAppointment(
@@ -58,25 +59,29 @@ export class UserController {
 
     */
 
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtGuard)
     @Get('appointments')
     async getAppointments(
-        @Body('email') email: string
-    ): Promise<Omit<Appointment,"user">[]> {
+        @GetUser() user: SafeUser
+    ): Promise<SafeAppointment[]> {
 
-        const appointments: Appointment[] = await this.userService.getAppointments(email);
-        const userlessAppointments: Omit<Appointment,"user">[] = appointments.map(({user, ...data}) => data);
+        const appointments: Appointment[] = await this.userService.getAppointments(user.email);
+        const userlessAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
         return userlessAppointments;
 
     }
 
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtGuard)
     @Get('appointments/:id')
     async getLimitedAppointments(
-        @Body('userEmail') userEmail: string,
+        @GetUser() user: SafeUser,
         @Param('id', ParseIntPipe) numAppointments: string
-    ): Promise<Omit<Appointment,"user">[]> {
+    ): Promise<SafeAppointment[]> {
 
-        const appointments: Appointment[] = await this.userService.getLimitedAppointments(userEmail, numAppointments);
-        const userlessAppointments: Omit<Appointment,"user">[] = appointments.map(({user, ...data}) => data);
+        const appointments: Appointment[] = await this.userService.getLimitedAppointments(user.email, numAppointments);
+        const userlessAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
         return userlessAppointments;
 
     }

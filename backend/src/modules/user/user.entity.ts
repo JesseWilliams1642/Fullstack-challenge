@@ -1,5 +1,6 @@
-import { Appointment } from "../appointment/appointment.entity";
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique } from 'typeorm'
+
+import { Appointment } from "../appointment/appointment.entity";
 
 @Unique(['email'])
 @Entity({name: "users"})

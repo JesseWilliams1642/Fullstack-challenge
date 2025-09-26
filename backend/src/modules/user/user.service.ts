@@ -1,9 +1,10 @@
 import { Injectable, Inject } from "@nestjs/common";
+import { Repository } from "typeorm";
+
 import { User } from "./user.entity"
 import { Appointment } from "../appointment/appointment.entity";
-import { Repository } from "typeorm";
-import { hashPassword } from "../../common/utils/hash";
-import { SafeUser } from "../../common/types/safe-user.type";
+import { hashPassword } from "../../common/utils";
+import { SafeUser } from "../../common/types";
 
 @Injectable()
 export class UserService {
@@ -62,7 +63,7 @@ export class UserService {
             where: { email: email },
             relations: ['appointments']
         });
-        if (!user) throw new Error(`User could not be found for email ${email}.`);
+        if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
 
         return [...user.appointments || []]
 
@@ -76,13 +77,13 @@ export class UserService {
         // Don't need to check if returnSize is a number as ParseIntPipe checks
         // for us in user.controller.ts
         let returnSize: number = Number(numAppointments);
-        if (returnSize < 0) throw new Error("Id should be a positive integer.");
+        if (returnSize < 0) throw new Error("Id should be a positive integer.");                // NEEDS ERROR HANDLING
 
         const user: User | null = await this.userRepository.findOne({
             where: { email: email },
             relations: ['appointments']
         });
-        if (!user) throw new Error(`User could not be found for email ${email}.`);
+        if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
         
         if ((user.appointments || []).length < returnSize)
             returnSize = (user.appointments || []).length;

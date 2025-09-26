@@ -5,7 +5,7 @@ import { Inject } from "@nestjs/common";
 
 import { UserPayload } from "../types";
 import { User } from "../../user/user.entity";
-import { SafeUser } from "../../../common/types/safe-user.type";
+import { SafeUser } from "../../../common/types";
 
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
@@ -13,10 +13,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     ) {
 
         const secret: string | undefined = process.env.JWT_SECRET;
-        if (!secret) throw new Error("JWT_SECRET must be set.");
+        if (!secret) throw new Error("JWT_SECRET must be set.");            // NEEDS ERROR HANDLING
 
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),       // Do I want to handle as cookie??
             ignoreExpiration: false,
             secretOrKey: secret
         });
@@ -34,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         });
 
-        if (!users) throw new Error("Invalid JWT Token.");
+        if (!users) throw new Error("Invalid JWT Token.");                  // NEEDS ERROR HANDLING
         if (users.length > 1) throw new Error("You done F-d up Jesse.");
 
         // Good place to add roles to req if we were doing RBAC

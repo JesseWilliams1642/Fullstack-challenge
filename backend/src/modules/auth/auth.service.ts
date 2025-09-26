@@ -1,9 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { User } from "../user/user.entity";
-import { Repository } from "typeorm";
-import { AuthDTO } from "./dto";
-import { comparePassword } from "../../common/utils/hash";
 import { JwtService } from "@nestjs/jwt";
+import { Repository } from "typeorm";
+
+import { User } from "../user/user.entity";
+import { AuthDTO } from "./dto";
+import { comparePassword } from "../../common/utils";
 import { JwtToken } from "./types";
 
 @Injectable()
