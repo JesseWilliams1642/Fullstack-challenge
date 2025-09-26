@@ -4,19 +4,19 @@ export class RegisterDTO {
     
     @IsEmail()
     @IsNotEmpty()
-    email: string;
+    email!: string;
 
     @IsString()
     @IsNotEmpty()
     @MinLength(8)
-    password: string;
+    password!: string;
 
     @IsPhoneNumber()
     @IsNotEmpty()
-    phoneNumber: string;
+    phoneNumber!: string;
 
     @IsString()
     @IsNotEmpty()
-    name: string;
+    name!: string;
 
 }

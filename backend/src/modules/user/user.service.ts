@@ -5,13 +5,18 @@ import { User } from "./user.entity"
 import { Appointment } from "../appointment/appointment.entity";
 import { hashPassword } from "../../common/utils";
 import { SafeUser } from "../../common/types";
+import { Service } from "../service/service.entity";
+import { Staff } from "../staff/staff.entity";
+import { checkAppointmentAvailability } from "../appointment/appointment.service";
 
 @Injectable()
 export class UserService {
     
     constructor(
         @Inject('USER_REPOSITORY') private userRepository: Repository<User>,
-        @Inject('APPOINTMENT_REPOSITORY') private appointmentRepository: Repository<Appointment>
+        @Inject('APPOINTMENT_REPOSITORY') private appointmentRepository: Repository<Appointment>,
+        @Inject('STAFF_REPOSITORY') private staffRepository: Repository<Staff>,
+        @Inject('SERVICE_REPOSITORY') private serviceRepository: Repository<Service>
     ) {}
 
     async createUser(
@@ -38,24 +43,47 @@ export class UserService {
 
     }
 
-    /*
-    async addAppointment(email: string, serviceType: string): Promise<User> {
+    async addAppointment(
+        email: string, 
+        serviceID: string, 
+        startDate: Date, 
+        staffID: string
+    ): Promise<Appointment[]> {
+
+        // Get entities from respective repositories
 
         const user: User | null = await this.userRepository.findOneBy({ email: email });
-        if (!user) throw new Error(`User could not be found for email ${email}.`);
+        if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
 
-        const newAppointment: Appointment = this.appointmentRepository.create({
-            serviceType,
-            user
-        });
+        const service: Service | null = await this.serviceRepository.findOneBy({ id: serviceID });
+        if (!service) throw new Error(`Service could not be found for id ${serviceID}.`);              // NEEDS ERROR HANDLING
 
-        const appointment: Appointment = await this.appointmentRepository.save(newAppointment);
+        const staff: Staff | null = await this.staffRepository.findOneBy({ id: staffID });
+        if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`);              // NEEDS ERROR HANDLING
 
-        user.appointments = [...user.appointments || [], appointment];
-        return await this.userRepository.save(user);
+        // Check if the appointment is still available
+        const appointmentAvailable: boolean = await checkAppointmentAvailability(startDate, service, staff);
+
+        if (appointmentAvailable) {
+
+            const newAppointment = new Appointment(
+                startDate,
+                service,
+                user,
+                staff
+            );
+
+            const appointment: Appointment = await this.appointmentRepository.save(newAppointment);
+
+            // Return the new list of user appointments
+
+            user.appointments = [...user.appointments || [], appointment];
+            await this.userRepository.save(user);
+            return user.appointments;
+
+        } else throw new Error("Appointment is unavailable.");                                      // NEEDS ERROR HANDLING
 
     }
-        */
 
     async getAppointments(email: string): Promise<Appointment[]> {
 
@@ -68,9 +96,6 @@ export class UserService {
         return [...user.appointments || []]
 
     }
-
-    // user.appointments.find(appointment => appointment.id => appointment.id === appointmentId);
-    // findIndex gets the index instead of the object itself
 
     async getLimitedAppointments(email: string, numAppointments: string): Promise<Appointment[]> {
 

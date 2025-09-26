@@ -5,7 +5,7 @@ import { Appointment } from "../appointment/appointment.entity";
 import type { SafeUser } from "../../common/types";
 import { JwtGuard } from "../../common/guards";
 import { GetUser } from "../../common/decorators";
-import { RegisterDTO } from "./dto";
+import { CreateAppointmentDTO, RegisterDTO } from "./dto";
 import { SafeAppointment } from "../appointment/types";
 
 // Note: Guards can be used at the controller level, as well as at the end-point level
@@ -15,7 +15,13 @@ export class UserController {
     
     constructor(private userService: UserService) {}
 
-    // @Body header tells the service which value from the request body we want to use! Really cool!
+    /**
+     * 
+     * USER APIS
+     * 
+     */
+
+    // Register for a new user account
 
     @HttpCode(HttpStatus.CREATED)
     @Post('register')
@@ -28,36 +34,37 @@ export class UserController {
 
 
 
+    /**
+     * 
+     * USER APPOINTMENT APIS
+     * 
+     */
 
+    // Create an appointment
 
-
-
-
-
-
-    /*
-
-    // Testing out auth
-    
+    @HttpCode(HttpStatus.CREATED)
     @UseGuards(JwtGuard)
     @Post('appointments')
     async addAppointment(
-        @GetUser() user: SafeUser, 
-        @Body('serviceType') serviceType: string
-    ): Promise<Object> {                                // NEED TO REPLACE WITH SOMETHING DTO-ISH!
+        @GetUser() _user: SafeUser, 
+        @Body() dto: CreateAppointmentDTO
+    ): Promise<SafeAppointment[]> {                                
 
-        //const user: SafeUser | undefined = req.user;
-        if (!user) throw new Error("Request does not hold the JWT payload.");
+        if (!_user) throw new Error("Request does not hold the JWT payload.");        // NEEDS ERROR HANDLING. IS THIS NECESSARY??   
 
-        const responseUser: User = await this.userService.addAppointment(user.email, serviceType);
-        if (!responseUser.appointments) return {id: responseUser.id, name: responseUser.name, appointments: [] };
+        const appointments: Appointment[] = await this.userService.addAppointment(
+            _user.email, 
+            dto.serviceID, 
+            dto.startDate, 
+            dto.staffID
+        );
 
-        const nonCyclicalAppointments: Omit<Appointment, "user">[] = responseUser.appointments.map(({ user, ...data }) => data);
-        return {id: responseUser.id, name: responseUser.name, appointments: nonCyclicalAppointments }
+        const safeAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
+        return safeAppointments;
 
     }
 
-    */
+    // Get all appointments
 
     @HttpCode(HttpStatus.OK)
     @UseGuards(JwtGuard)
@@ -67,10 +74,12 @@ export class UserController {
     ): Promise<SafeAppointment[]> {
 
         const appointments: Appointment[] = await this.userService.getAppointments(user.email);
-        const userlessAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
-        return userlessAppointments;
+        const safeAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
+        return safeAppointments;
 
     }
+
+    // Get a limited number (id) of appointments
 
     @HttpCode(HttpStatus.OK)
     @UseGuards(JwtGuard)
@@ -81,8 +90,8 @@ export class UserController {
     ): Promise<SafeAppointment[]> {
 
         const appointments: Appointment[] = await this.userService.getLimitedAppointments(user.email, numAppointments);
-        const userlessAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
-        return userlessAppointments;
+        const safeAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
+        return safeAppointments;
 
     }
 

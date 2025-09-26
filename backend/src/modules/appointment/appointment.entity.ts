@@ -13,7 +13,7 @@ export class Appointment {
     startTimestamp!: Date;
 
     @ManyToOne(() => Service)
-    serviceType!: Service;
+    service!: Service;
 
     @ManyToOne(() => User, user => user.appointments)
     user!: User;
@@ -23,12 +23,12 @@ export class Appointment {
 
     constructor(
         startTimestamp: Date,
-        serviceType: Service,
+        service: Service,
         user: User,
         staff: Staff
     ) {
         this.startTimestamp = startTimestamp;
-        this.serviceType = serviceType;
+        this.service = service;
         this.user = user;
         this.staff = staff;
     };
