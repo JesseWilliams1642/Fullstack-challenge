@@ -32,8 +32,6 @@ export class UserController {
         return createdUser;
     }
 
-
-
     /**
      * 
      * USER APPOINTMENT APIS

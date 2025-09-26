@@ -7,7 +7,7 @@ import { hashPassword } from "../../common/utils";
 import { SafeUser } from "../../common/types";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
-import { checkAppointmentAvailability, checkAppointmentOverlap } from "../appointment/appointment.service";
+import { AppointmentService } from "../appointment/appointment.service";
 
 @Injectable()
 export class UserService {
@@ -16,7 +16,9 @@ export class UserService {
         @Inject('USER_REPOSITORY') private userRepository: Repository<User>,
         @Inject('APPOINTMENT_REPOSITORY') private appointmentRepository: Repository<Appointment>,
         @Inject('STAFF_REPOSITORY') private staffRepository: Repository<Staff>,
-        @Inject('SERVICE_REPOSITORY') private serviceRepository: Repository<Service>
+        @Inject('SERVICE_REPOSITORY') private serviceRepository: Repository<Service>,
+
+        private readonly appointmentService: AppointmentService
     ) {}
 
     async createUser(
@@ -62,12 +64,12 @@ export class UserService {
         if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`);              // NEEDS ERROR HANDLING
 
         // Check if the appointment is still available
-        const appointmentAvailable: boolean = await checkAppointmentAvailability(startDate, service, staff);
+        const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff);
 
         // Check if there is overlap with the user's pre-existing appointments
         let appointmentOverlap: boolean = false;
         if (user.appointments)
-            appointmentOverlap = await checkAppointmentOverlap(user.appointments, service, startDate);
+            appointmentOverlap = await this.appointmentService.checkAppointmentOverlap(user.appointments, service, startDate);
 
         if (appointmentAvailable) {
 
