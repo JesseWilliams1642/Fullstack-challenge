@@ -3,35 +3,38 @@ import { Controller, Post, Body, Get, Param, ParseIntPipe, UseGuards, Req } from
 import { UserService } from "./user.service";
 import { User } from "./user.entity";
 import { Appointment } from "../appointment/appointment.entity";
-import type { SafeUser } from "./types/safe-user.types";
-import { JwtGuard } from "../auth/guard";
-import { GetUser } from "../auth/decorator";
-
-// 2:20:11
+import type { SafeUser } from "../../common/types/safe-user.type";
+import { JwtGuard } from "../../common/guards/jwt.guard";
+import { GetUser } from "../../common/decorators/user.decorator";
+import { RegisterDTO } from "./dto";
 
 // Note: Guards can be used at the controller level, as well as at the end-point level
-//@UseGuards(JwtGuard)
-@Controller('user')
+// @UseGuards(JwtGuard)
+@Controller('api/user')
 export class UserController {
     
-    constructor(
-        private userService: UserService
-    ) {}
+    constructor(private userService: UserService) {}
 
-    // @Body header tells the service which value from the request body
-    // we want to use! Really cool!
+    // @Body header tells the service which value from the request body we want to use! Really cool!
 
-    @Post()
+    @Post('register')
     async addUser(
-        @Body('email') email: string,
-        @Body('password') password: string,
-        @Body('name') name: string
-    ): Promise<Omit<User,"hashedPassword">> {
-        const createdUser = await this.userService.createUser(email, password, name);
-        return { id: createdUser.id, email: createdUser.email, name: createdUser.name }
+        @Body() dto: RegisterDTO
+    ): Promise<SafeUser> {
+        const createdUser = await this.userService.createUser(dto.email, dto.password, dto.name, dto.phoneNumber);
+        return createdUser;
     }
 
 
+
+
+
+
+
+
+
+
+    /*
 
     // Testing out auth
 
@@ -52,6 +55,8 @@ export class UserController {
         return {id: responseUser.id, name: responseUser.name, appointments: nonCyclicalAppointments }
 
     }
+
+    */
 
     @Get('appointments')
     async getAppointments(

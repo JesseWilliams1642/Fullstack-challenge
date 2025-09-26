@@ -1,9 +1,11 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { UserPayload } from "../types";
-import { User } from "src/modules/user/user.entity";
 import { Repository } from "typeorm";
 import { Inject } from "@nestjs/common";
+
+import { UserPayload } from "../types";
+import { User } from "../../user/user.entity";
+import { SafeUser } from "../../../common/types/safe-user.type";
 
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
@@ -36,7 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (users.length > 1) throw new Error("You done F-d up Jesse.");
 
         // Good place to add roles to req if we were doing RBAC
-        const user: Omit<User,"hashedPassword"> = users[0];
+        const user: SafeUser = users[0];
         return user;
 
     }

@@ -1,4 +1,4 @@
-import { SafeUser } from 'src/modules/user/types/safe-user.types';
+import { SafeUser } from 'src/common/types/safe-user.type';
 
 declare global {
   namespace Express {

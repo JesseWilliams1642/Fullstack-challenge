@@ -3,6 +3,7 @@ import { User } from "./user.entity"
 import { Appointment } from "../appointment/appointment.entity";
 import { Repository } from "typeorm";
 import { hashPassword } from "../../common/utils/hash";
+import { SafeUser } from "../../common/types/safe-user.type";
 
 @Injectable()
 export class UserService {
@@ -12,18 +13,31 @@ export class UserService {
         @Inject('APPOINTMENT_REPOSITORY') private appointmentRepository: Repository<Appointment>
     ) {}
 
-    async createUser(email: string, password: string, name: string): Promise<User> {
+    async createUser(
+        email: string, 
+        password: string, 
+        name: string, 
+        phoneNumber: string
+    ): Promise<SafeUser> {
 
         const newUser: User = this.userRepository.create({
             email: email,
             hashedPassword: await hashPassword(password),
-            name: name
+            name: name,
+            phoneNumber: phoneNumber
         })
 
-        return await this.userRepository.save(newUser);
+        const savedUser: User = await this.userRepository.save(newUser);
+        return {
+            id: savedUser.id,
+            name: savedUser.name,
+            email: savedUser.email,
+            phoneNumber: savedUser.phoneNumber
+        };
 
     }
 
+    /*
     async addAppointment(email: string, serviceType: string): Promise<User> {
 
         const user: User | null = await this.userRepository.findOneBy({ email: email });
@@ -40,6 +54,7 @@ export class UserService {
         return await this.userRepository.save(user);
 
     }
+        */
 
     async getAppointments(email: string): Promise<Appointment[]> {
 
