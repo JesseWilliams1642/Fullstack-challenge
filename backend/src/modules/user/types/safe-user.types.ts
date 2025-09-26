@@ -1,4 +1,4 @@
-import { NonFunctionProperties } from "src/utils/strip-class";
+import { NonFunctionProperties } from "src/common/utils/strip-class";
 import { User } from "../user.entity";
 
 // Needed to override Express.User

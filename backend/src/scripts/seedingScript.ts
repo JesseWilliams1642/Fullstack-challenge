@@ -6,7 +6,7 @@ import { AppModule } from "../app.module";
 import { Staff } from "../modules/staff/staff.entity";
 import { User } from "../modules/user/user.entity";
 import { Service } from "../modules/service/service.entity";
-import { hashPassword } from "../utils/hash";
+import { hashPassword } from "../common/utils/hash";
 
 
 async function bootstrap() {
