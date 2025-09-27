@@ -69,8 +69,8 @@ export class UserService {
 
         // Check if there is overlap with the user's pre-existing appointments
         if (user.appointments) {
-            let overlap: boolean = await this.appointmentService.checkAppointmentOverlap(user.appointments, service, startDate);
-            if (overlap) throw new Error("Appoint overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
+            let overlap: boolean = await this.appointmentService.checkAppointmentOverlap(user, service, startDate);
+            if (overlap) throw new Error("Appointment overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
         }
             
         if (appointmentAvailable) {
@@ -174,8 +174,8 @@ export class UserService {
         const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff, appointment);
 
         // Check if there is overlap with the user's pre-existing appointments
-        let appointmentOverlap: boolean = await this.appointmentService.checkAppointmentOverlap(user.appointments, service, startDate, appointment);
-        if (appointmentOverlap) throw new Error("Appoint overlaps with pre-existing user appointment.");                                                // NEEDS ERROR HANDLING
+        let appointmentOverlap: boolean = await this.appointmentService.checkAppointmentOverlap(user, service, startDate, appointment);
+        if (appointmentOverlap) throw new Error("Appointment overlaps with pre-existing user appointment.");                                                // NEEDS ERROR HANDLING
 
         if (appointmentAvailable) {
 

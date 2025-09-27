@@ -4,6 +4,8 @@ import { Repository } from "typeorm";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
 import { Appointment } from "./appointment.entity";
+import { durationToMilliseconds } from "../../common/utils";
+import { User } from "../user/user.entity";
 
 @Injectable()
 export class AppointmentService {
@@ -41,11 +43,39 @@ export class AppointmentService {
     }
 
     async checkAppointmentOverlap(
-        preexistingAppointments: Appointment[], 
+        user: User, 
         service: Service, 
         startTime: Date,
         oldAppointment?: Appointment
     ): Promise<boolean> {
+
+        // Was needed; service was not transferring over!
+        let preexistingAppointments: Appointment[] = await this.appointmentRepository.find({
+            where: { user: user },
+            relations: ['service']
+        })
+
+        // Remove old appointment from the comparison list if we are updating oldAppointment --> newAppointment
+
+        if (oldAppointment)
+            preexistingAppointments = preexistingAppointments.filter(item => (item.id !== oldAppointment.id));
+
+        // Calculate start and end times in milliseconds
+
+        const startTimeMs: number = startTime.getTime();
+        const duration: number = durationToMilliseconds(service.serviceDuration);
+        const endTimeMs: number = startTimeMs + duration;
+
+        for (let appointment of preexistingAppointments) {
+
+            const preeexistingStartTime: number = appointment.startTimestamp.getTime();
+            const preexistingDuration: number = durationToMilliseconds(appointment.service.serviceDuration);
+            const preexistingEndtime: number = preeexistingStartTime + preexistingDuration;
+
+            if (startTimeMs >= preeexistingStartTime && startTimeMs < preexistingEndtime) return true;
+            if (endTimeMs > preeexistingStartTime && endTimeMs <= preexistingEndtime) return true;
+
+        }
 
         return false;
 
