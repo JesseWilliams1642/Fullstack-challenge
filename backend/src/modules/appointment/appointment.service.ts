@@ -75,7 +75,7 @@ export class AppointmentService {
             if (endTime > appointmentStart - staffBuffer && endTime <= appointmentEnd + staffBuffer) continue;
 
             // Check for the break period
-            if (startTime >= staffBreakStart && startTime < staffBreakEnd) continue;  // Only < as we can start at the end of the break
+            if (startTime >= staffBreakStart && startTime < staffBreakEnd) continue; 
             if (endTime > staffBreakStart && endTime <= staffBreakEnd) continue;     
 
             // Goto next appointment for check if we have moved past it
@@ -92,8 +92,8 @@ export class AppointmentService {
 
     async checkAppointmentAvailability(
         startDate: Date, 
-        service: Service, 
-        staff: Staff,
+        serviceID: string, 
+        staffID: string,
 
         // Needed to remove from the list of appointments we compare with if we doing the check for 
         // editAppointment (as that appointment would) be gone after the edit!
@@ -101,7 +101,75 @@ export class AppointmentService {
             
     ): Promise<boolean> {
         
+        // Get required data
+        const service: Service | null = await this.serviceRepository.findOneBy({ id: serviceID });
+        if (!service) throw new Error(`Service could not be found for id ${serviceID}.`);              // NEEDS ERROR HANDLING
+
+        const staff: Staff | null = await this.staffRepository.findOneBy({ id: staffID });
+        if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`);              // NEEDS ERROR HANDLING
         
+        // Check if the staff member works on that day
+        let dayOfWeek: number = startDate.getDay();
+        dayOfWeek = (dayOfWeek - 1) % 7;            // Convert from 0-6 Sun-Sat to 0-6 Mon-Sun
+
+        if (!staff.daysWorking[dayOfWeek])          // If not working that day, return no dates
+            return false;
+
+        // Get staff appointments ordered by soonest appointment to latest
+        let staffAppointments: Appointment[] = await this.appointmentRepository.createQueryBuilder('appointment')
+                                                                                    .leftJoinAndSelect('appointment.service', 'service')
+                                                                                    .where('appointment.staff = :staffID', { staffID: staff.id })
+                                                                                    .orderBy('appointment.startTimestamp', 'ASC')
+                                                                                    .getMany();
+
+        // Remove the appointment that we are editing from staffAppointments, if it is a part of it
+
+        if (oldAppointment)
+            staffAppointments = staffAppointments.filter(item => (item.id !== oldAppointment.id));
+
+        // Get only the day part of startDate
+
+        const day = new Date(
+            startDate.getFullYear(),
+            startDate.getMonth(),
+            startDate.getDate()
+        );
+
+        // Get service-related information in milliseconds
+
+        const staffDayStart: number = durationToMilliseconds(staff.startTime) + day.getTime();
+        const staffDayEnd: number = staffDayStart + durationToMilliseconds(staff.shiftDuration);
+
+        const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod);
+
+        const staffBreakStart: number = durationToMilliseconds(staff.breakTime) + day.getTime();
+        const staffBreakEnd: number = staffBreakStart + durationToMilliseconds(staff.breakDuration);
+
+        const startTime: number = startDate.getTime();
+        const duration: number = durationToMilliseconds(service.serviceDuration);
+        const endTime: number = startTime + duration;
+
+        // Check if the new appointment is inside the staff's shift
+        if (!(startTime >= staffDayStart && startTime < staffDayEnd)) return false;
+        if (!(endTime > staffDayStart && endTime <= staffDayEnd)) return false;
+
+        // Check if the new appoint is inside the staff's break
+        if (startTime >= staffBreakStart && startTime < staffBreakEnd) return false; 
+        if (endTime > staffBreakStart && endTime <= staffBreakEnd) return false;  
+
+        // Check if the new appointment is inside any pre-existing staff appointments (buffer inclusive)
+        for (let appointment of staffAppointments) {
+
+            // Get current appointment information
+            const appointmentStart: number = appointment.startTimestamp.getTime();
+            const appointmentEnd: number = appointmentStart + durationToMilliseconds(appointment.service.serviceDuration)
+
+            // Check if the start or end time is inside an appointment (or its buffer bounds)
+            if (startTime >= appointmentStart - staffBuffer && startTime < appointmentEnd + staffBuffer) return false;
+            if (endTime > appointmentStart - staffBuffer && endTime <= appointmentEnd + staffBuffer) return false;
+
+        }
+
         return true;
 
     }

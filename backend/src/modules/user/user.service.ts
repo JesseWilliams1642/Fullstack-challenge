@@ -65,7 +65,7 @@ export class UserService {
         if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`);              // NEEDS ERROR HANDLING
 
         // Check if the appointment is still available
-        const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff);
+        const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, serviceID, staffID);
 
         // Check if there is overlap with the user's pre-existing appointments
         if (user.appointments) {
@@ -171,7 +171,7 @@ export class UserService {
         const startDate: Date = new Date(dto.startDate) || appointment.startTimestamp;
 
         // Check if the appointment is still available
-        const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff, appointment);
+        const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, dto.serviceID, dto.staffID, appointment);
 
         // Check if there is overlap with the user's pre-existing appointments
         let appointmentOverlap: boolean = await this.appointmentService.checkAppointmentOverlap(user, service, startDate, appointment);
