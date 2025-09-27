@@ -11,14 +11,20 @@ export class HttpErrorFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
 
-    const error = typeof exceptionResponse === 'string'
-      ? { message: exceptionResponse }
-      : exceptionResponse;
+    if (typeof exceptionResponse === "string")
 
-    response.status(status).json({
-      statusCode: status,
-      ...error,
-      timestamp: new Date().toISOString(),
-    });
+      response.status(status).json({
+        statusCode: status,
+        message: exceptionResponse,
+        timestamp: new Date().toISOString(),
+      });
+
+    else 
+
+      response.status(status).json({
+        ...exceptionResponse,
+        timestamp: new Date().toISOString(),
+      });
+
   }
 }

@@ -24,8 +24,11 @@ async function bootstrap() {
   });
 
   // Global error handling
-  app.useGlobalFilters(new HttpErrorFilter);
-  app.useGlobalFilters(new AllExceptionsFilter);
+  // NOTE: Tries filters FILO
+  app.useGlobalFilters(
+    new AllExceptionsFilter(),
+    new HttpErrorFilter()
+  );
 
   // Setting up and exposing port
   const port: string = process.env.BACKEND_PORT || "5554";
