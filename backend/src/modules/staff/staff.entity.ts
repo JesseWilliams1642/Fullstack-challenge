@@ -16,13 +16,13 @@ export class Staff {
     @Column({ name: "days_working", type: "boolean", array: true, nullable: false })
     daysWorking!: boolean[];
 
-    @Column({ name: "start_time", type: "time", nullable: false })
+    @Column({ name: "start_time", type: "interval", nullable: false })
     startTime!: string;
 
     @Column({ name: "shift_duration", type: "interval" })
     shiftDuration!: string;
 
-    @Column({ name: "break_time", type: "time", nullable: false })
+    @Column({ name: "break_time", type: "interval", nullable: false })
     breakTime!: string;
 
     @Column({ name: "break_duration", type: "interval", nullable: false })

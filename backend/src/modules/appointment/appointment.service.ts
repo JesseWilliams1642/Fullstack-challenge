@@ -18,10 +18,85 @@ export class AppointmentService {
     
     async getAvailabilities(
         serviceID: string,
+        day: Date,
         staffID: string
     ): Promise<Date[]> {
 
-        return [new Date()];
+        // Get required data
+        const service: Service | null = await this.serviceRepository.findOneBy({ id: serviceID });
+        if (!service) throw new Error(`Service could not be found for id ${serviceID}.`);              // NEEDS ERROR HANDLING
+
+        const staff: Staff | null = await this.staffRepository.findOneBy({ id: staffID });
+        if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`);              // NEEDS ERROR HANDLING
+
+
+
+
+        // NEED TO ADD DAYS WORKING BIT
+
+
+
+
+
+
+
+
+
+
+
+        // Get staff appointments ordered by soonest appointment to latest
+        const staffAppointments: Appointment[] = await this.appointmentRepository.createQueryBuilder('appointment')
+                                                                                    .leftJoinAndSelect('appointment.service', 'service')
+                                                                                    .where('appointment.staff = :staffID', { staffID: staff.id })
+                                                                                    .orderBy('appointment.startTimestamp', 'ASC')
+                                                                                    .getMany();
+
+        const staffAppointmentSize: number = staffAppointments.length;
+        let staffAppointmentIndex: number = 0;
+
+        console.log(staffAppointmentSize);
+
+        // Get service-related information in milliseconds
+
+        const staffDayStart: number = durationToMilliseconds(staff.startTime) + day.getTime();
+        const staffDayEnd: number = staffDayStart + durationToMilliseconds(staff.shiftDuration);
+
+        const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod);
+
+        const staffBreakStart: number = durationToMilliseconds(staff.breakTime) + day.getTime();
+        const staffBreakEnd: number = staffBreakStart + durationToMilliseconds(staff.breakDuration);
+
+        const possibleValues: Date[] = [];
+        let startTime: number = staffDayStart - 300000; // - 5 minutes
+        const duration: number = durationToMilliseconds(service.serviceDuration);
+        
+        while (startTime + duration < staffDayEnd) {
+
+            startTime = startTime + 300000;     // + 5 minutes
+
+            const endTime: number = startTime + duration;
+
+            // Get current appointment information
+            const appointmentStart: number = staffAppointments[staffAppointmentIndex].startTimestamp.getTime();
+            const appointmentEnd: number = appointmentStart + durationToMilliseconds(staffAppointments[staffAppointmentIndex].service.serviceDuration)
+
+            // Check if the start or end time is inside an appointment (or its buffer bounds)
+            if (startTime >= appointmentStart - staffBuffer && startTime < appointmentEnd + staffBuffer) continue;
+            if (endTime > appointmentStart - staffBuffer && endTime <= appointmentEnd + staffBuffer) continue;
+
+            // Check for the break period
+            if (startTime >= staffBreakStart && startTime < staffBreakEnd) continue;  // Only < as we can start at the end of the break
+            if (endTime > staffBreakStart && endTime <= staffBreakEnd) continue;     
+
+            // Goto next appointment for check if we have moved past it
+            if (startTime >= appointmentEnd + staffBuffer && staffAppointmentIndex + 1 < staffAppointmentSize)
+                staffAppointmentIndex = staffAppointmentIndex + 1; 
+
+            possibleValues.push(new Date(startTime));
+
+        }
+
+        return possibleValues;
 
     }
 
@@ -36,8 +111,7 @@ export class AppointmentService {
             
     ): Promise<boolean> {
         
-
-
+        
         return true;
 
     }

@@ -90,9 +90,9 @@ async function bootstrap() {
     const staff: Staff = staffRepository.create({
         name: "Jesse",
         daysWorking: [true,true,true,true,true,false,false],
-        startTime: "09:00:00",
+        startTime: "9h",
         shiftDuration: "8h",
-        breakTime: "12:00:00",
+        breakTime: "12h",
         breakDuration: "1h",
         bufferPeriod: "15m"
     });

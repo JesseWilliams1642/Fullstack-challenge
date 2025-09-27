@@ -17,8 +17,8 @@ export class AppointmentController {
     async getAppointments(
         @Body() dto: getAppointmentAvailabilityDTO
     ): Promise<Date[]> {
-
-        return await this.appointmentService.getAvailabilities(dto.serviceID, dto.staffID);
+        
+        return await this.appointmentService.getAvailabilities(dto.serviceID, new Date(dto.date), dto.staffID);
 
     }
 
