@@ -29,20 +29,12 @@ export class AppointmentService {
         const staff: Staff | null = await this.staffRepository.findOneBy({ id: staffID });
         if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`);              // NEEDS ERROR HANDLING
 
+        // Check if the staff member works on that day
+        let dayOfWeek: number = day.getDay();
+        dayOfWeek = (dayOfWeek - 1) % 7;            // Convert from 0-6 Sun-Sat to 0-6 Mon-Sun
 
-
-
-        // NEED TO ADD DAYS WORKING BIT
-
-
-
-
-
-
-
-
-
-
+        if (!staff.daysWorking[dayOfWeek])          // If not working that day, return no dates
+            return [];
 
         // Get staff appointments ordered by soonest appointment to latest
         const staffAppointments: Appointment[] = await this.appointmentRepository.createQueryBuilder('appointment')
@@ -53,8 +45,6 @@ export class AppointmentService {
 
         const staffAppointmentSize: number = staffAppointments.length;
         let staffAppointmentIndex: number = 0;
-
-        console.log(staffAppointmentSize);
 
         // Get service-related information in milliseconds
 
