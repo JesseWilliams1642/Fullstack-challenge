@@ -1,4 +1,4 @@
-import { IsDate, IsInt, IsNotEmpty, IsUUID, Min } from "class-validator";
+import { IsInt, IsISO8601, IsNotEmpty, IsUUID, Min } from "class-validator";
 
 export class EditAppointmentDTO {
     
@@ -11,9 +11,9 @@ export class EditAppointmentDTO {
     @IsNotEmpty({ message: "Service ID can not be empty." })
     serviceID!: string;
 
-    @IsDate({ message: "Start Date must be a valid Date." })
+    @IsISO8601(undefined, { message: "Start Date must be a valid Date." })
     @IsNotEmpty({ message: "Start Date can not be empty." })
-    startDate!: Date;
+    startDate!: string;
 
     @IsUUID(undefined, { message: "Staff ID must be a valid UUID." })
     @IsNotEmpty({ message: "Staff ID can not be empty." })

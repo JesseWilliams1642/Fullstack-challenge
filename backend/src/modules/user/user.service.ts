@@ -164,7 +164,7 @@ export class UserService {
 
         } else staff = appointment.staff;
         
-        const startDate: Date = dto.startDate || appointment.startTimestamp;
+        const startDate: Date = new Date(dto.startDate) || appointment.startTimestamp;
 
         // Check if the appointment is still available
         const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff, appointment);

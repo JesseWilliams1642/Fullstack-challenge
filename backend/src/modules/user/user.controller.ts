@@ -53,7 +53,7 @@ export class UserController {
         const appointments: Appointment[] = await this.userService.addAppointment(
             user.email, 
             dto.serviceID, 
-            dto.startDate, 
+            new Date(dto.startDate), 
             dto.staffID
         );
 
