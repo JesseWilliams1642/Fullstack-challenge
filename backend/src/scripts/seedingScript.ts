@@ -54,27 +54,32 @@ async function bootstrap() {
 
     serviceList.push(serviceRepository.create({
         serviceName: "Haircut",
-        serviceDuration: "30m"
+        serviceDuration: "30m",
+        serviceDescription: ""
     }));
 
     serviceList.push(serviceRepository.create({
         serviceName: "Hair Styling",
-        serviceDuration: "45m"
+        serviceDuration: "45m",
+        serviceDescription: ""
     }));
 
     serviceList.push(serviceRepository.create({
         serviceName: "Hair Colouring",
-        serviceDuration: "90m"
+        serviceDuration: "90m",
+        serviceDescription: ""
     }));
 
     serviceList.push(serviceRepository.create({
         serviceName: "Consultation",
-        serviceDuration: "15m"
+        serviceDuration: "15m",
+        serviceDescription: ""
     }));
 
     serviceList.push(serviceRepository.create({
         serviceName: "Deep Conditioning Treatment",
-        serviceDuration: "60m"
+        serviceDuration: "60m",
+        serviceDescription: ""
     }));
 
     await serviceRepository.insert(serviceList);

@@ -1,18 +1,19 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Service } from './modules/service/service.entity';
-import { Repository } from 'typeorm';
+import { ServiceService } from './modules/service/service.service';
+import { GetServiceDTO } from './modules/service/dto';
 
 @Injectable()
 export class AppService {
 
   constructor(
-    @Inject('SERVICE_REPOSITORY') private serviceRepository: Repository<Service>
+    private readonly serviceService: ServiceService
   ) {}
 
   // Retrieve all services and return them
 
-  async getService(): Promise<Service[]> {
-    return await this.serviceRepository.find() || [];
+  async getService(): Promise<GetServiceDTO[]> {
+    return await this.serviceService.getServices();
   }
 
 }

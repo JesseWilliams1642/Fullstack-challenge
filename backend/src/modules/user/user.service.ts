@@ -8,6 +8,7 @@ import { SafeUser } from "../../common/types";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
 import { AppointmentService } from "../appointment/appointment.service";
+import { DeleteAppointmentDTO, EditAppointmentDTO } from "./dto";
 
 @Injectable()
 export class UserService {
@@ -130,7 +131,88 @@ export class UserService {
 
     }
 
-    // Patch changes specific values. Put values replaces the whole object
-    // Delete
+    async editAppointment(
+        appointments: Appointment[], 
+        dto: EditAppointmentDTO
+    ): Promise<Appointment> {
+
+        // Get the appointment to be changed
+
+        const appointmentIndex: number = dto.appointmentIndex;
+        if (appointments.length <= appointmentIndex) throw new Error("Appointment index exceeds users' appointment array size.");
+        
+        if (!dto.serviceID && !dto.staffID && !dto.startDate) throw new Error("Request needs at least one changed attribute.");
+
+        const appointment: Appointment = appointments[appointmentIndex];
+
+        // Get the new service/staff member if an ID is in the request
+        // Else, use the old values
+
+        let service: Service | null = null;
+        if (dto.serviceID) {
+
+            service = await this.serviceRepository.findOneBy({ id: dto.serviceID });
+            if (!service) throw new Error(`Service could not be found for id ${dto.serviceID}.`);              // NEEDS ERROR HANDLING
+        
+        } else service = appointment.service;
+
+        let staff: Staff | null = null;
+        if (dto.staffID) {
+
+            staff = await this.staffRepository.findOneBy({ id: dto.staffID });
+            if (!staff) throw new Error(`Staff could not be found for id ${dto.staffID}.`);              // NEEDS ERROR HANDLING
+
+        } else staff = appointment.staff;
+        
+        const startDate: Date = dto.startDate || appointment.startTimestamp;
+
+        // Check if the appointment is still available
+        const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff, appointment);
+
+        // Check if there is overlap with the user's pre-existing appointments
+        let appointmentOverlap: boolean = false;
+        if (appointments)
+            appointmentOverlap = await this.appointmentService.checkAppointmentOverlap(appointments, service, startDate, appointment);
+
+        if (appointmentAvailable) {
+
+            if (appointmentOverlap) throw new Error("Appoint overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
+
+            appointment.service = service;
+            appointment.staff = staff;
+            appointment.startTimestamp = startDate;
+
+            return await this.appointmentRepository.save(appointment);
+
+        } else throw new Error("Appointment is unavailable.");                                      // NEEDS ERROR HANDLING
+
+    }
+
+    async deleteAppointment(
+        email: string, 
+        appointmentIndex: number
+    ): Promise<void> {
+
+        // Get user and to-be-deleted appointment
+
+        const user: User | null = await this.userRepository.findOne({
+            where: { email: email },
+            relations: ['appointments']
+        });
+        if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
+
+        if (!user.appointments) throw new Error("User does not contain any appointments.");
+        if (user.appointments.length <= appointmentIndex) throw new Error("Appointment index exceeds users' appointment array size.")
+
+        const appointment: Appointment = user.appointments[appointmentIndex];
+
+        // Rewrite user.appointments, delete the appointment
+
+        user.appointments = user.appointments.filter(item => item !== appointment);
+        await this.userRepository.save(user);
+        await this.appointmentRepository.delete(appointment);
+
+    }
 
 }
+

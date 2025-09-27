@@ -11,13 +11,18 @@ export class Service {
 
     @Column({ name: "service_duration", type: "interval", nullable: false })
     serviceDuration!: string;
+
+    @Column({ name: "service_description", type: "varchar", nullable: false })
+    serviceDescription!: string;
     
     constructor(
         serviceName: string,
-        serviceDuration: string
+        serviceDuration: string,
+        serviceDescription: string
     ) {
         this.serviceName = serviceName;
         this.serviceDuration = serviceDuration;
+        this.serviceDescription = serviceDescription;
     };
 
 }

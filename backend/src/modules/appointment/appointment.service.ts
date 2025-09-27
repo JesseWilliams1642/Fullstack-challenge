@@ -26,20 +26,28 @@ export class AppointmentService {
     async checkAppointmentAvailability(
         startDate: Date, 
         service: Service, 
-        staff: Staff
-    ): Promise<boolean> {
+        staff: Staff,
 
-        return false;
+        // Needed to remove from the list of appointments we compare with if we doing the check for 
+        // editAppointment (as that appointment would) be gone after the edit!
+        oldAppointment?: Appointment    
+            
+    ): Promise<boolean> {
+        
+
+
+        return true;
 
     }
 
     async checkAppointmentOverlap(
         preexistingAppointments: Appointment[], 
         service: Service, 
-        startTime: Date
+        startTime: Date,
+        oldAppointment?: Appointment
     ): Promise<boolean> {
 
-        return false;
+        return true;
 
     }
 
