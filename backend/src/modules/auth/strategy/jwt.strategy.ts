@@ -2,6 +2,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { Repository } from "typeorm";
 import { Inject } from "@nestjs/common";
+import { Request } from "express";
 
 import { UserPayload } from "../types";
 import { User } from "../../user/user.entity";
@@ -16,7 +17,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (!secret) throw new Error("JWT_SECRET must be set.");            // NEEDS ERROR HANDLING
 
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),       // Do I want to handle as cookie??
+            jwtFromRequest: ExtractJwt.fromExtractors([
+                (req: Request) => {
+                return req?.cookies?.['JWT_fullstack']; 
+                },
+            ]),       
             ignoreExpiration: false,
             secretOrKey: secret
         });

@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpErrorFilter } from './common/exception-filters/global.exception-filter';
 import { AllExceptionsFilter } from './common/exception-filters/global-unexpected.exception-filter';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   
@@ -13,9 +14,13 @@ async function bootstrap() {
     whitelist: true                           
   }));                                      
 
+  // Allows us to parse cookies
+  app.use(cookieParser());
+
   // Allows the frontend to make requests 
   app.enableCors({
-    origin: "http://localhost:" + process.env.VITE_FRONTEND_PORT
+    origin: "http://localhost:" + process.env.VITE_FRONTEND_PORT,
+    credentials: true           // Use cookies
   });
 
   // Global error handling

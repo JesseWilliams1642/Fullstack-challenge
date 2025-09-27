@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, ParseIntPipe, UseGuards, Req, HttpStatus, HttpCode, Patch, Delete } from "@nestjs/common";
+import { Controller, Post, Body, Get, Param, ParseIntPipe, UseGuards, HttpStatus, HttpCode, Patch, Delete } from "@nestjs/common";
 
 import { UserService } from "./user.service";
 import { Appointment } from "../appointment/appointment.entity";

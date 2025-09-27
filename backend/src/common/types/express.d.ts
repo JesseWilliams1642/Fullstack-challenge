@@ -7,7 +7,9 @@ declare global {
                                         // impossible
     interface Request {
       user?: User;
+      cookies?: { [key: string]: string };
     }
+
   }
 }
 

@@ -12,7 +12,7 @@ import { hashPassword } from "../common/utils/hash";
 async function bootstrap() {
 
     const app: INestApplicationContext = await NestFactory.createApplicationContext(AppModule);
-    const dataSource: DataSource = app.get(DataSource);
+    const dataSource: DataSource = app.get<DataSource>('DATA_SOURCE');
 
     // Get all the relevant repositories
 
