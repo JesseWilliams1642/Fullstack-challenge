@@ -1,10 +1,9 @@
-import { IsInt, IsNotEmpty, Min } from "class-validator";
+import { IsNotEmpty, IsUUID } from "class-validator";
 
 export class DeleteAppointmentDTO {
     
-    @IsInt({ message: "Appointment Index must be an integer." })
-    @IsNotEmpty({ message: "Appointment Index can not be empty." })
-    @Min(0, { message: "Appointment Index must be zero or greater." })
-    appointmentIndex!: number;
+    @IsUUID(undefined, { message: "Appointment ID must be a valid UUID." })
+    @IsNotEmpty({ message: "Appointment ID can not be empty." })
+    appointmentID: string;
 
 }

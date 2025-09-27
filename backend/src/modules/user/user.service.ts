@@ -51,7 +51,7 @@ export class UserService {
         serviceID: string, 
         startDate: Date, 
         staffID: string
-    ): Promise<Appointment[]> {
+    ): Promise<Appointment> {
 
         // Get entities from respective repositories
 
@@ -68,13 +68,12 @@ export class UserService {
         const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff);
 
         // Check if there is overlap with the user's pre-existing appointments
-        let appointmentOverlap: boolean = false;
-        if (user.appointments)
-            appointmentOverlap = await this.appointmentService.checkAppointmentOverlap(user.appointments, service, startDate);
-
+        if (user.appointments) {
+            let overlap: boolean = await this.appointmentService.checkAppointmentOverlap(user.appointments, service, startDate);
+            if (overlap) throw new Error("Appoint overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
+        }
+            
         if (appointmentAvailable) {
-
-            if (appointmentOverlap) throw new Error("Appoint overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
 
             const newAppointment = new Appointment(
                 startDate,
@@ -83,13 +82,7 @@ export class UserService {
                 staff
             );
 
-            const appointment: Appointment = await this.appointmentRepository.save(newAppointment);
-
-            // Return the new list of user appointments
-
-            user.appointments = [...user.appointments || [], appointment];
-            await this.userRepository.save(user);
-            return user.appointments;
+            return this.appointmentRepository.save(newAppointment);
 
         } else throw new Error("Appointment is unavailable.");                                      // NEEDS ERROR HANDLING
 
@@ -99,11 +92,12 @@ export class UserService {
 
         const user: User | null = await this.userRepository.findOne({
             where: { email: email },
-            relations: ['appointments']
+            relations: ['appointments', 'appointments.staff', 'appointments.service']
         });
         if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
 
-        return [...user.appointments || []]
+        user.appointments = user.appointments || [];
+        return user.appointments;
 
     }
 
@@ -116,7 +110,7 @@ export class UserService {
 
         const user: User | null = await this.userRepository.findOne({
             where: { email: email },
-            relations: ['appointments']
+            relations: ['appointments', 'appointments.staff', 'appointments.service']
         });
         if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
         
@@ -132,18 +126,28 @@ export class UserService {
     }
 
     async editAppointment(
-        appointments: Appointment[], 
+        email: string, 
         dto: EditAppointmentDTO
     ): Promise<Appointment> {
 
-        // Get the appointment to be changed
+        // Get the appointment to be changed, check the user owns it
 
-        const appointmentIndex: number = dto.appointmentIndex;
-        if (appointments.length <= appointmentIndex) throw new Error("Appointment index exceeds users' appointment array size.");
+        const user: User | null = await this.userRepository.findOne({
+            where: { email: email },
+            relations: ['appointments', 'appointments.staff', 'appointments.service']
+        });
+        if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
+
+        if (!user.appointments) throw new Error("User does not contain any appointments.");
+
+        let appointment: Appointment | null = null;
+        for (let _appointment of user.appointments)
+            if (_appointment.id === dto.appointmentID) 
+                appointment = _appointment;
+
+        if (!appointment) throw new Error("Appointment is not owned by the User");
         
         if (!dto.serviceID && !dto.staffID && !dto.startDate) throw new Error("Request needs at least one changed attribute.");
-
-        const appointment: Appointment = appointments[appointmentIndex];
 
         // Get the new service/staff member if an ID is in the request
         // Else, use the old values
@@ -170,13 +174,10 @@ export class UserService {
         const appointmentAvailable: boolean = await this.appointmentService.checkAppointmentAvailability(startDate, service, staff, appointment);
 
         // Check if there is overlap with the user's pre-existing appointments
-        let appointmentOverlap: boolean = false;
-        if (appointments)
-            appointmentOverlap = await this.appointmentService.checkAppointmentOverlap(appointments, service, startDate, appointment);
+        let appointmentOverlap: boolean = await this.appointmentService.checkAppointmentOverlap(user.appointments, service, startDate, appointment);
+        if (appointmentOverlap) throw new Error("Appoint overlaps with pre-existing user appointment.");                                                // NEEDS ERROR HANDLING
 
         if (appointmentAvailable) {
-
-            if (appointmentOverlap) throw new Error("Appoint overlaps with pre-existing user appointment.");        // NEEDS ERROR HANDLING
 
             appointment.service = service;
             appointment.staff = staff;
@@ -190,7 +191,7 @@ export class UserService {
 
     async deleteAppointment(
         email: string, 
-        appointmentIndex: number
+        appointmentID: string
     ): Promise<void> {
 
         // Get user and to-be-deleted appointment
@@ -202,15 +203,20 @@ export class UserService {
         if (!user) throw new Error(`User could not be found for email ${email}.`);              // NEEDS ERROR HANDLING
 
         if (!user.appointments) throw new Error("User does not contain any appointments.");
-        if (user.appointments.length <= appointmentIndex) throw new Error("Appointment index exceeds users' appointment array size.")
+        
+        let appointment: Appointment | null = null;
+        for (let _appointment of user.appointments)
+            if (_appointment.id === appointmentID) 
+                appointment = _appointment;
 
-        const appointment: Appointment = user.appointments[appointmentIndex];
-
-        // Rewrite user.appointments, delete the appointment
-
-        user.appointments = user.appointments.filter(item => item !== appointment);
+        if (!appointment) throw new Error("Appointment is not owned by the User");
+        
+        user.appointments = user.appointments.filter(item => (item.id !== appointment.id));
         await this.userRepository.save(user);
+
         await this.appointmentRepository.delete(appointment);
+
+        
 
     }
 

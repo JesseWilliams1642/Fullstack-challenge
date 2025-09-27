@@ -47,7 +47,7 @@ export class AppointmentService {
         oldAppointment?: Appointment
     ): Promise<boolean> {
 
-        return true;
+        return false;
 
     }
 

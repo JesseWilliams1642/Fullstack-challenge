@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
 import { Appointment } from '../appointment/appointment.entity';
 
 @Entity({name: "staff"})
@@ -10,8 +10,8 @@ export class Staff {
     @Column({ name: "name", type: "varchar", nullable: false })
     name!: string;
 
-    @ManyToOne(() => Appointment, appointment => appointment.staff)
-    appointments!: Appointment[];
+    @OneToMany(() => Appointment, appointment => appointment.staff, { cascade: true, eager: true })
+    appointments?: Appointment[];
 
     @Column({ name: "days_working", type: "boolean", array: true, nullable: false })
     daysWorking!: boolean[];
@@ -38,8 +38,7 @@ export class Staff {
         shiftDuration: string,
         breakTime: string,
         breakDuration: string,
-        bufferPeriod: string,
-        appointments: Appointment[] = []
+        bufferPeriod: string
     ) {
         this.name = name;
         this.daysWorking = daysWorking;
@@ -48,7 +47,6 @@ export class Staff {
         this.breakTime = breakTime;
         this.breakDuration = breakDuration;
         this.bufferPeriod = bufferPeriod;
-        this.appointments = appointments;
     };
 
 }

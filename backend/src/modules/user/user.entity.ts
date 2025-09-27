@@ -21,7 +21,7 @@ export class User {
     @Column({ name: "hashed_password", type: "varchar", nullable: false })
     hashedPassword!: string;
     
-    @OneToMany(() => Appointment, appointment => appointment.user)
+    @OneToMany(() => Appointment, appointment => appointment.user, { cascade: true, eager: true })
     appointments?: Appointment[];
 
     constructor(

@@ -46,19 +46,30 @@ export class UserController {
     async addAppointment(
         @GetUser() user: SafeUser, 
         @Body() dto: CreateAppointmentDTO
-    ): Promise<SafeAppointment[]> {                                
+    ): Promise<SafeAppointment> {                                
 
         if (!user) throw new Error("Request does not hold the JWT payload.");        // NEEDS ERROR HANDLING. IS THIS NECESSARY??   
 
-        const appointments: Appointment[] = await this.userService.addAppointment(
+        const appointment: Appointment = await this.userService.addAppointment(
             user.email, 
             dto.serviceID, 
             new Date(dto.startDate), 
             dto.staffID
         );
 
-        const safeAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
-        return safeAppointments;
+        const safeAppointment: SafeAppointment = {
+
+            id: appointment.id,
+            startTimestamp: appointment.startTimestamp,
+            serviceID: appointment.service.id,
+            serviceName: appointment.service.serviceName,
+            serviceDuration: appointment.service.serviceDuration,
+            serviceDescription: appointment.service.serviceDescription,
+            staffID: appointment.staff.id,
+            staffName: appointment.staff.name
+
+        };
+        return safeAppointment;
 
     }
 
@@ -72,7 +83,20 @@ export class UserController {
     ): Promise<SafeAppointment[]> {
 
         const appointments: Appointment[] = await this.userService.getAppointments(user.email);
-        const safeAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
+        
+        const safeAppointments: SafeAppointment[] = appointments.map(item => ({
+
+            id: item.id,
+            startTimestamp: item.startTimestamp,
+            serviceID: item.service.id,
+            serviceName: item.service.serviceName,
+            serviceDuration: item.service.serviceDuration,
+            serviceDescription: item.service.serviceDescription,
+            staffID: item.staff.id,
+            staffName: item.staff.name
+
+        }));
+
         return safeAppointments;
 
     }
@@ -88,7 +112,19 @@ export class UserController {
     ): Promise<SafeAppointment[]> {
 
         const appointments: Appointment[] = await this.userService.getLimitedAppointments(user.email, numAppointments);
-        const safeAppointments: SafeAppointment[] = appointments.map(({user, ...data}) => data);
+        
+        const safeAppointments: SafeAppointment[] = appointments.map(item => ({
+
+            id: item.id,
+            startTimestamp: item.startTimestamp,
+            serviceID: item.service.id,
+            serviceName: item.service.serviceName,
+            serviceDuration: item.service.serviceDuration,
+            serviceDescription: item.service.serviceDescription,
+            staffID: item.staff.id,
+            staffName: item.staff.name
+
+        }));
         return safeAppointments;
 
     }
@@ -97,45 +133,53 @@ export class UserController {
 
     @HttpCode(HttpStatus.OK)
     @UseGuards(JwtGuard)
-    @Patch('appointments/edit')
+    @Patch('appointments')
     async editAppointment(
         @GetUser() _user: SafeUser, 
         @Body() dto: EditAppointmentDTO
     ): Promise<SafeAppointment> {                                
 
         if (!_user) throw new Error("Request does not hold the JWT payload.");        // NEEDS ERROR HANDLING. IS THIS NECESSARY??   
-        if (!_user.appointments) throw new Error("User does not contain any appointments.");
-
+        
         const appointment: Appointment = await this.userService.editAppointment(
-            _user.appointments, 
+            _user.email, 
             dto
         );
 
-        const { user, ...safeAppointment } = appointment;
+        const safeAppointment: SafeAppointment = {
+
+            id: appointment.id,
+            startTimestamp: appointment.startTimestamp,
+            serviceID: appointment.service.id,
+            serviceName: appointment.service.serviceName,
+            serviceDuration: appointment.service.serviceDuration,
+            serviceDescription: appointment.service.serviceDescription,
+            staffID: appointment.staff.id,
+            staffName: appointment.staff.name
+
+        };
         return safeAppointment;
 
     }
 
     // Delete an appointment
 
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.OK)
     @UseGuards(JwtGuard)
-    @Delete('appointments/delete')
+    @Delete('appointments')
     async deleteAppointment(
         @GetUser() user: SafeUser, 
         @Body() dto: DeleteAppointmentDTO
-    ): Promise<void> {                                
+    ): Promise<string> {                                
 
         if (!user) throw new Error("Request does not hold the JWT payload.");        // NEEDS ERROR HANDLING. IS THIS NECESSARY??   
         
-        const appointmentIndex: number = dto.appointmentIndex;
-        
         await this.userService.deleteAppointment(
             user.email,
-            appointmentIndex 
+            dto.appointmentID
         );
 
-        return;
+        return "Appointment deleted successfully.";
 
     }
 
