@@ -21,10 +21,10 @@ export class AuthService {
         const password: string = dto.password;
 
         const user: User | null = await this.userRespository.findOneBy({ email });
-        if (!user) return { jwtToken: "" };                                                         // NEEDS ERROR HANDLING
+        if (!user) throw new Error("User was not found.");                                             // NEEDS ERROR HANDLING
 
         const equalPasswords: boolean = await comparePassword(password, user.hashedPassword);
-        if (!equalPasswords) return { jwtToken: "" };                                               // NEEDS ERROR HANDLING
+        if (!equalPasswords) throw new Error("Password mismatch.");                                   // NEEDS ERROR HANDLING
 
         return await this.signToken(user.id, user.email);
 
