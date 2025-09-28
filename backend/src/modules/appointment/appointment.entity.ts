@@ -1,36 +1,29 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, OneToMany } from 'typeorm'
-import { User } from '../user/user.entity';
-import { Staff } from '../staff/staff.entity';
-import { Service } from '../service/service.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { User } from "../user/user.entity";
+import { Staff } from "../staff/staff.entity";
+import { Service } from "../service/service.entity";
 
-@Entity({name: "appointments"})
+@Entity({ name: "appointments" })
 export class Appointment {
+	@PrimaryGeneratedColumn("uuid", { name: "id" })
+	id!: string;
 
-    @PrimaryGeneratedColumn("uuid", { name: "id" })
-    id!: string;
+	@Column({ name: "start_timestamp", type: "timestamptz", nullable: false })
+	startTimestamp!: Date;
 
-    @Column({ name: "start_timestamp", type: "timestamptz", nullable: false })
-    startTimestamp!: Date;
+	@ManyToOne(() => Service)
+	service!: Service;
 
-    @ManyToOne(() => Service)
-    service!: Service;
+	@ManyToOne(() => User, (user) => user.appointments)
+	user!: User;
 
-    @ManyToOne(() => User, user => user.appointments)
-    user!: User;
+	@ManyToOne(() => Staff, (staff) => staff.appointments)
+	staff!: Staff;
 
-    @ManyToOne(() => Staff, staff => staff.appointments)
-    staff!: Staff;
-
-    constructor(
-        startTimestamp: Date,
-        service: Service,
-        user: User,
-        staff: Staff
-    ) {
-        this.startTimestamp = startTimestamp;
-        this.service = service;
-        this.user = user;
-        this.staff = staff;
-    };
-
+	constructor(startTimestamp: Date, service: Service, user: User, staff: Staff) {
+		this.startTimestamp = startTimestamp;
+		this.service = service;
+		this.user = user;
+		this.staff = staff;
+	}
 }

@@ -1,17 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
-import { Service } from './modules/service/service.entity';
-import { GetServiceDTO } from './modules/service/dto';
+import { Controller, Get } from "@nestjs/common";
+import { AppService } from "./app.service";
+import { GetServiceDTO } from "./modules/service/dto";
 
-@Controller('api')
+@Controller("api")
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+	constructor(private readonly appService: AppService) {}
 
-  // Get all services to display on front page
+	// Get all services to display on front page
 
-  @Get()
-  async getServices(): Promise<GetServiceDTO[]> {
-    return await this.appService.getService(); 
-  }
-
+	@Get()
+	async getServices(): Promise<GetServiceDTO[]> {
+		return await this.appService.getService();
+	}
 }

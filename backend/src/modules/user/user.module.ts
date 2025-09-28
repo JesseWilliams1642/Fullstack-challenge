@@ -8,17 +8,9 @@ import { StaffModule } from "../staff/staff.module";
 import { ServiceModule } from "../service/service.module";
 
 @Module({
-    imports: [
-        DatabaseModule, 
-        AppointmentModule,
-        StaffModule,
-        ServiceModule
-    ],
-    controllers: [UserController],
-    providers: [
-        UserService,
-        UserProvider
-    ],
-    exports: [UserProvider]
+	imports: [DatabaseModule, AppointmentModule, StaffModule, ServiceModule],
+	controllers: [UserController],
+	providers: [UserService, UserProvider],
+	exports: [UserProvider],
 })
-export class UserModule {};
+export class UserModule {}

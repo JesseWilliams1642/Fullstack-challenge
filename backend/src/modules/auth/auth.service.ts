@@ -9,48 +9,41 @@ import { JwtToken } from "./types";
 
 @Injectable()
 export class AuthService {
+	constructor(
+		@Inject("USER_REPOSITORY") private userRespository: Repository<User>,
+		private jwt: JwtService,
+	) {}
 
-    constructor(
-        @Inject('USER_REPOSITORY') private userRespository: Repository<User>,
-        private jwt: JwtService
-    ) {}
+	async login(dto: AuthDTO): Promise<JwtToken> {
+		const email: string = dto.email;
+		const password: string = dto.password;
 
-    async login(dto: AuthDTO): Promise<JwtToken> {
+		const user: User | null = await this.userRespository.findOneBy({ email });
+		if (!user) throw new Error("User was not found."); // NEEDS ERROR HANDLING
 
-        const email: string = dto.email;
-        const password: string = dto.password;
+		const equalPasswords: boolean = await comparePassword(
+			password,
+			user.hashedPassword,
+		);
+		if (!equalPasswords) throw new Error("Password mismatch."); // NEEDS ERROR HANDLING
 
-        const user: User | null = await this.userRespository.findOneBy({ email });
-        if (!user) throw new Error("User was not found.");                                             // NEEDS ERROR HANDLING
+		return await this.signToken(user.id, user.email);
+	}
 
-        const equalPasswords: boolean = await comparePassword(password, user.hashedPassword);
-        if (!equalPasswords) throw new Error("Password mismatch.");                                   // NEEDS ERROR HANDLING
+	async signToken(id: string, email: string): Promise<JwtToken> {
+		const secret: string | undefined = process.env.JWT_SECRET;
+		if (!secret) throw new Error("JWT_SECRET must be set."); // NEEDS ERROR HANDLING
 
-        return await this.signToken(user.id, user.email);
+		const jwtPayload = {
+			sub: id,
+			email,
+		};
 
-    }
+		const token: string = await this.jwt.signAsync(jwtPayload, {
+			expiresIn: "15m",
+			secret,
+		});
 
-    async logout(): Promise<JwtToken> {
-        return { jwtToken: "" };
-    }
-
-    async signToken(id: string, email: string): Promise<JwtToken> {
-
-        const secret: string | undefined = process.env.JWT_SECRET;
-        if (!secret) throw new Error("JWT_SECRET must be set.");                                       // NEEDS ERROR HANDLING
-
-        const jwtPayload = {
-            sub: id,
-            email
-        };
-
-        const token: string = await this.jwt.signAsync(jwtPayload, {
-            expiresIn: '15m',
-            secret
-        });
-
-        return { jwtToken: token }
-
-    }
-
-};
+		return { jwtToken: token };
+	}
+}

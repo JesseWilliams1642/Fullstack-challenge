@@ -5,12 +5,9 @@ import { ServiceController } from "./service.controller";
 import { ServiceService } from "./service.service";
 
 @Module({
-    imports: [DatabaseModule],
-    controllers: [ServiceController],
-    providers: [
-        ServiceService,
-        ServiceProvider
-    ],
-    exports: [ServiceProvider, ServiceService]
+	imports: [DatabaseModule],
+	controllers: [ServiceController],
+	providers: [ServiceService, ServiceProvider],
+	exports: [ServiceProvider, ServiceService],
 })
-export class ServiceModule {};
+export class ServiceModule {}

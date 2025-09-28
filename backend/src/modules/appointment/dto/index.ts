@@ -1,1 +1,1 @@
-export * from './appointment-availability.dto';
+export * from "./appointment-availability.dto";

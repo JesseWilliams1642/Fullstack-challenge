@@ -9,42 +9,38 @@ import { User } from "../../user/user.entity";
 import { SafeUser } from "../../../common/types";
 
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(
-        @Inject('USER_REPOSITORY') private userRepository: Repository<User>
-    ) {
+	constructor(
+		@Inject("USER_REPOSITORY") private userRepository: Repository<User>,
+	) {
+		const secret: string | undefined = process.env.JWT_SECRET;
+		if (!secret) throw new Error("JWT_SECRET must be set."); // NEEDS ERROR HANDLING
 
-        const secret: string | undefined = process.env.JWT_SECRET;
-        if (!secret) throw new Error("JWT_SECRET must be set.");            // NEEDS ERROR HANDLING
+		super({
+			jwtFromRequest: ExtractJwt.fromExtractors([
+				(req: Request): string | null => {
+					const cookies = req.cookies as Record<string, string>;
+					return cookies?.JWT_fullstack ?? null;
+				},
+			]),
+			ignoreExpiration: false,
+			secretOrKey: secret,
+		});
+	}
 
-        super({
-            jwtFromRequest: ExtractJwt.fromExtractors([
-                (req: Request) => {
-                return req?.cookies?.['JWT_fullstack']; 
-                },
-            ]),       
-            ignoreExpiration: false,
-            secretOrKey: secret
-        });
-    }
+	// Runs after the JWT is verified, but before the request reaches the controller
+	// Payload is the data taken from the JWT token
+	// What is returned will be attached to req.user
 
-    // Runs after the JWT is verified, but before the request reaches the controller
-    // Payload is the data taken from the JWT token
-    // What is returned will be attached to req.user
+	async validate(payload: UserPayload): Promise<SafeUser> {
+		const users: User[] = await this.userRepository.find({
+			where: { id: payload.sub, email: payload.email },
+		});
 
-    async validate(payload: UserPayload) {
+		if (users.length === 0) throw new Error("Invalid JWT Token."); // NEEDS ERROR HANDLING
+		if (users.length > 1) throw new Error("Duplicate users found.");
 
-        const users: User[] = await this.userRepository.find({
-
-            where: {id: payload.sub, email: payload.email}
-
-        });
-
-        if (!users) throw new Error("Invalid JWT Token.");                  // NEEDS ERROR HANDLING
-        if (users.length > 1) throw new Error("You done F-d up Jesse.");
-
-        // Good place to add roles to req if we were doing RBAC
-        const user: SafeUser = users[0];
-        return user;
-
-    }
+		// Good place to add roles to req if we were doing RBAC
+		const user: SafeUser = users[0];
+		return user;
+	}
 }

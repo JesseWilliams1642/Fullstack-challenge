@@ -1,2 +1,2 @@
-export * from './user-payload.type';
-export * from './token.type';
+export * from "./user-payload.type";
+export * from "./token.type";

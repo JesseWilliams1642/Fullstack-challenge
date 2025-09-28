@@ -3,4 +3,4 @@ import { User } from "../../modules/user/user.entity";
 
 // Needed to override Express.User
 
-export type SafeUser = NonFunctionProperties<Omit<User,"hashedPassword">>
+export type SafeUser = NonFunctionProperties<Omit<User, "hashedPassword">>;

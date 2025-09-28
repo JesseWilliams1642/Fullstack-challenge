@@ -1,1 +1,1 @@
-export * from './get-staff.dto';
+export * from "./get-staff.dto";

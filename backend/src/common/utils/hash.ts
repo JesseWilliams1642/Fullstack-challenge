@@ -1,13 +1,14 @@
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from "bcrypt";
 
 export const hashPassword = async (password: string): Promise<string> => {
+	const salt: number = Number(process.env.SALT);
+	if (isNaN(salt)) throw new Error("Salt rounds should be a number.");
+	return await bcrypt.hash(password, salt);
+};
 
-    const salt: number = Number(process.env.SALT);
-    if (isNaN(salt)) throw new Error("Salt rounds should be a number.");
-    return await bcrypt.hash(password, salt)
-
-}
-
-export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
-    return await bcrypt.compare(password, hash);
-}
+export const comparePassword = async (
+	password: string,
+	hash: string,
+): Promise<boolean> => {
+	return await bcrypt.compare(password, hash);
+};

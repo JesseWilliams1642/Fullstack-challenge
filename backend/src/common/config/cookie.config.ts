@@ -1,8 +1,8 @@
-import { CookieConfig } from "../types"
+import { CookieConfig } from "../types";
 
 export const cookieConfig: CookieConfig = {
-    httpOnly: true,
-    secure: false,                      // Set true if HTTPS set up
-    sameSite: 'strict',                 
-    maxAge: 24 * 60 * 60 * 1000,        // 1 day
-}
+	httpOnly: true,
+	secure: false, // Set true if HTTPS set up
+	sameSite: "strict",
+	maxAge: 24 * 60 * 60 * 1000, // 1 day
+};

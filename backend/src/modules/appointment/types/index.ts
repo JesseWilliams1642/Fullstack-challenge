@@ -1,1 +1,1 @@
-export * from './safe-appointment.type';
+export * from "./safe-appointment.type";

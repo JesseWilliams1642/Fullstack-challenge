@@ -7,16 +7,9 @@ import { StaffModule } from "../staff/staff.module";
 import { ServiceModule } from "../service/service.module";
 
 @Module({
-    imports: [
-        DatabaseModule, 
-        StaffModule,
-        ServiceModule
-    ],
-    controllers: [AppointmentController],
-    providers: [
-        AppointmentService,
-        AppointmentProvider
-    ],
-    exports: [AppointmentProvider, AppointmentService]
+	imports: [DatabaseModule, StaffModule, ServiceModule],
+	controllers: [AppointmentController],
+	providers: [AppointmentService, AppointmentProvider],
+	exports: [AppointmentProvider, AppointmentService],
 })
-export class AppointmentModule {};
+export class AppointmentModule {}

@@ -1,16 +1,15 @@
-import { SafeUser } from 'src/common/types/safe-user.type';
+import { SafeUser } from "src/common/types/safe-user.type";
 
 declare global {
-  namespace Express {
+	namespace Express {
+		// Required, else taking user from req.user becomes impossible
+		interface User extends SafeUser {}
 
-    interface User extends SafeUser {}  // Required, else taking user from req.user becomes
-                                        // impossible
-    interface Request {
-      user?: User;
-      cookies?: { [key: string]: string };
-    }
-
-  }
+		interface Request {
+			user?: User;
+			cookies?: { [key: string]: string };
+		}
+	}
 }
 
 export {};
