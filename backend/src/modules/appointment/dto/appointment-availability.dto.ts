@@ -1,6 +1,6 @@
 import { IsISO8601, IsNotEmpty, IsUUID } from "class-validator";
 
-export class getAppointmentAvailabilityDTO {
+export class GetAppointmentAvailabilityDTO {
 	@IsUUID(undefined, { message: "Service ID must be a valid UUID." })
 	@IsNotEmpty({ message: "Service ID can not be empty." })
 	serviceID!: string;

@@ -21,44 +21,17 @@ import {
 	CreateAppointmentDTO,
 	EditAppointmentDTO,
 	DeleteAppointmentDTO,
-	RegisterDTO,
 } from "./dto";
 import { SafeAppointment } from "../appointment/types";
 
+@UseGuards(JwtGuard)
 @Controller("api/user")
 export class UserController {
 	constructor(private userService: UserService) {}
 
-	/**
-	 *
-	 * USER APIS
-	 *
-	 */
-
-	// Register for a new user account
-
-	@HttpCode(HttpStatus.CREATED)
-	@Post("register")
-	async addUser(@Body() dto: RegisterDTO): Promise<SafeUser> {
-		const createdUser = await this.userService.createUser(
-			dto.email,
-			dto.password,
-			dto.name,
-			dto.phoneNumber,
-		);
-		return createdUser;
-	}
-
-	/**
-	 *
-	 * USER APPOINTMENT APIS
-	 *
-	 */
-
 	// Create an appointment
 
 	@HttpCode(HttpStatus.CREATED)
-	@UseGuards(JwtGuard)
 	@Post("appointments")
 	async addAppointment(
 		@GetUser() user: SafeUser,
@@ -87,7 +60,6 @@ export class UserController {
 	// Get all appointments
 
 	@HttpCode(HttpStatus.OK)
-	@UseGuards(JwtGuard)
 	@Get("appointments")
 	async getAppointments(@GetUser() user: SafeUser): Promise<SafeAppointment[]> {
 		const appointments: Appointment[] = await this.userService.getAppointments(
@@ -111,7 +83,6 @@ export class UserController {
 	// Get a limited number (id) of appointments
 
 	@HttpCode(HttpStatus.OK)
-	@UseGuards(JwtGuard)
 	@Get("appointments/:id")
 	async getLimitedAppointments(
 		@GetUser() user: SafeUser,
@@ -136,7 +107,6 @@ export class UserController {
 	// Edit an appointment
 
 	@HttpCode(HttpStatus.OK)
-	@UseGuards(JwtGuard)
 	@Patch("appointments")
 	async editAppointment(
 		@GetUser() _user: SafeUser,
@@ -163,7 +133,6 @@ export class UserController {
 	// Delete an appointment
 
 	@HttpCode(HttpStatus.OK)
-	@UseGuards(JwtGuard)
 	@Delete("appointments")
 	async deleteAppointment(
 		@GetUser() user: SafeUser,

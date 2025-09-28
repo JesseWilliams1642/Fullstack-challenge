@@ -9,8 +9,6 @@ import { Repository } from "typeorm";
 
 import { User } from "./user.entity";
 import { Appointment } from "../appointment/appointment.entity";
-import { hashPassword } from "../../common/utils";
-import { SafeUser } from "../../common/types";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
 import { AppointmentService } from "../appointment/appointment.service";
@@ -27,29 +25,6 @@ export class UserService {
 
 		private readonly appointmentService: AppointmentService,
 	) {}
-
-	// Create a new user and add it to the database
-	async createUser(
-		email: string,
-		password: string,
-		name: string,
-		phoneNumber: string,
-	): Promise<SafeUser> {
-		const newUser: User = this.userRepository.create({
-			email: email,
-			hashedPassword: await hashPassword(password),
-			name: name,
-			phoneNumber: phoneNumber,
-		});
-
-		const savedUser: User = await this.userRepository.save(newUser);
-		return {
-			id: savedUser.id,
-			name: savedUser.name,
-			email: savedUser.email,
-			phoneNumber: savedUser.phoneNumber,
-		};
-	}
 
 	// Add a new appointment, making sure it is available (no double booking or overlapping)
 

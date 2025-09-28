@@ -3,7 +3,7 @@ import { IsISO8601, IsNotEmpty, IsUUID } from "class-validator";
 export class EditAppointmentDTO {
 	@IsUUID(undefined, { message: "Appointment ID must be a valid UUID." })
 	@IsNotEmpty({ message: "Appointment ID can not be empty." })
-	appointmentID: string;
+	appointmentID!: string;
 
 	@IsUUID(undefined, { message: "Service ID must be a valid UUID." })
 	@IsNotEmpty({ message: "Service ID can not be empty." })

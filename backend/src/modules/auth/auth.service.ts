@@ -10,13 +10,14 @@ import { Repository } from "typeorm";
 
 import { User } from "../user/user.entity";
 import { AuthDTO } from "./dto";
-import { comparePassword } from "../../common/utils";
+import { comparePassword, hashPassword } from "../../common/utils";
 import { JwtToken } from "./types";
+import { SafeUser } from "src/common/types";
 
 @Injectable()
 export class AuthService {
 	constructor(
-		@Inject("USER_REPOSITORY") private userRespository: Repository<User>,
+		@Inject("USER_REPOSITORY") private userRepository: Repository<User>,
 		private jwt: JwtService,
 	) {}
 
@@ -27,7 +28,7 @@ export class AuthService {
 		const email: string = dto.email;
 		const password: string = dto.password;
 
-		const user: User | null = await this.userRespository.findOneBy({ email });
+		const user: User | null = await this.userRepository.findOneBy({ email });
 		if (!user) throw new NotFoundException("User was not found.");
 
 		const equalPasswords: boolean = await comparePassword(
@@ -57,5 +58,28 @@ export class AuthService {
 		});
 
 		return { jwtToken: token };
+	}
+
+	// Create a new user and add it to the database
+	async createUser(
+		email: string,
+		password: string,
+		name: string,
+		phoneNumber: string,
+	): Promise<SafeUser> {
+		const newUser: User = this.userRepository.create({
+			email: email,
+			hashedPassword: await hashPassword(password),
+			name: name,
+			phoneNumber: phoneNumber,
+		});
+
+		const savedUser: User = await this.userRepository.save(newUser);
+		return {
+			id: savedUser.id,
+			name: savedUser.name,
+			email: savedUser.email,
+			phoneNumber: savedUser.phoneNumber,
+		};
 	}
 }

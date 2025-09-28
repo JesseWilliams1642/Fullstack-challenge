@@ -1,14 +1,14 @@
 import {
-	Body,
 	Controller,
 	Get,
 	HttpCode,
 	HttpStatus,
+	Query,
 	UseGuards,
 } from "@nestjs/common";
 import { AppointmentService } from "./appointment.service";
 import { JwtGuard } from "../../common/guards";
-import { getAppointmentAvailabilityDTO } from "./dto";
+import { GetAppointmentAvailabilityDTO } from "./dto";
 
 @UseGuards(JwtGuard)
 @Controller("api/appointment")
@@ -21,7 +21,7 @@ export class AppointmentController {
 	@HttpCode(HttpStatus.OK)
 	@Get("availability")
 	async getAppointments(
-		@Body() dto: getAppointmentAvailabilityDTO,
+		@Query() dto: GetAppointmentAvailabilityDTO,
 	): Promise<Date[]> {
 		return await this.appointmentService.getAvailabilities(
 			dto.serviceID,

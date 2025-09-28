@@ -4,3 +4,5 @@ dist
 Dockerfile
 .gitignore
 .env*
+README.md
+*.yml

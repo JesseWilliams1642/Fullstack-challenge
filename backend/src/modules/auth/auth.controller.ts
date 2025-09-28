@@ -12,6 +12,8 @@ import { AuthService } from "./auth.service";
 import { AuthDTO } from "./dto";
 import { JwtToken } from "./types";
 import { cookieConfig } from "../../common/config";
+import { RegisterDTO } from "./dto/register.dto";
+import { SafeUser } from "../../common/types";
 
 @Controller("api/auth")
 export class AuthController {
@@ -39,5 +41,19 @@ export class AuthController {
 	logout(@Res({ passthrough: true }) res: Response): string {
 		res.clearCookie("JWT_fullstack");
 		return "Logged out successfully.";
+	}
+
+	// Register for a new user account
+
+	@HttpCode(HttpStatus.CREATED)
+	@Post("register")
+	async addUser(@Body() dto: RegisterDTO): Promise<SafeUser> {
+		const createdUser = await this.authService.createUser(
+			dto.email,
+			dto.password,
+			dto.name,
+			dto.phoneNumber,
+		);
+		return createdUser;
 	}
 }
