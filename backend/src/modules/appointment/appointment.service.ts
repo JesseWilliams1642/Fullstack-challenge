@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { Between, Repository } from "typeorm";
 
 import { Service } from "../service/service.entity";
@@ -29,12 +29,13 @@ export class AppointmentService {
 			id: serviceID,
 		});
 		if (!service)
-			throw new Error(`Service could not be found for id ${serviceID}.`); // NEEDS ERROR HANDLING
+			throw new NotFoundException(`Service could not be found for id ${serviceID}.`);
 
 		const staff: Staff | null = await this.staffRepository.findOneBy({
 			id: staffID,
 		});
-		if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`); // NEEDS ERROR HANDLING
+		if (!staff)
+			throw new NotFoundException(`Staff could not be found for id ${staffID}.`);
 
 		// Check if the staff member works on that day
 		let dayOfWeek: number = day.getDay();
@@ -140,12 +141,13 @@ export class AppointmentService {
 			id: serviceID,
 		});
 		if (!service)
-			throw new Error(`Service could not be found for id ${serviceID}.`); // NEEDS ERROR HANDLING
+			throw new NotFoundException(`Service could not be found for id ${serviceID}.`);
 
 		const staff: Staff | null = await this.staffRepository.findOneBy({
 			id: staffID,
 		});
-		if (!staff) throw new Error(`Staff could not be found for id ${staffID}.`); // NEEDS ERROR HANDLING
+		if (!staff)
+			throw new NotFoundException(`Staff could not be found for id ${staffID}.`);
 
 		// Check if the staff member works on that day
 		let dayOfWeek: number = startDate.getDay();

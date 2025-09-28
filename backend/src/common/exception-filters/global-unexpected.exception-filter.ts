@@ -19,9 +19,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
 		const message: string =
 			exception instanceof Error ? exception.message : "Internal server error";
 
-		response.status(status).json({
+		// Show error in console log
+
+		console.log({
 			statusCode: status,
 			message,
+			timestamp: new Date().toISOString(),
+		});
+
+		// Do send exception.message for unknown error types
+		// Do not want potential data leaks
+
+		response.status(status).json({
+			statusCode: status,
+			message: "Internal server error",
 			timestamp: new Date().toISOString(),
 		});
 	}

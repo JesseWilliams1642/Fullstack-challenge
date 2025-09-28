@@ -3,11 +3,13 @@ import { User } from "../user/user.entity";
 import { Appointment } from "../appointment/appointment.entity";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
+import { InternalServerErrorException } from "@nestjs/common";
 
 // DataSource used for migrations and repositories
 
 const port: number = Number(process.env.DB_PORT) || 5432;
-if (isNaN(port)) throw new Error("Database port is not a valid number!");
+if (isNaN(port))
+	throw new InternalServerErrorException("Database port is not a valid number!");
 
 const dataSource = new DataSource({
 	type: "postgres",

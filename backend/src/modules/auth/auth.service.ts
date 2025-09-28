@@ -1,4 +1,10 @@
-import { Inject, Injectable } from "@nestjs/common";
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Repository } from "typeorm";
 
@@ -22,13 +28,13 @@ export class AuthService {
 		const password: string = dto.password;
 
 		const user: User | null = await this.userRespository.findOneBy({ email });
-		if (!user) throw new Error("User was not found."); // NEEDS ERROR HANDLING
+		if (!user) throw new NotFoundException("User was not found.");
 
 		const equalPasswords: boolean = await comparePassword(
 			password,
 			user.hashedPassword,
 		);
-		if (!equalPasswords) throw new Error("Password mismatch."); // NEEDS ERROR HANDLING
+		if (!equalPasswords) throw new BadRequestException("Password mismatch.");
 
 		return await this.signToken(user.id, user.email);
 	}
@@ -38,7 +44,7 @@ export class AuthService {
 
 	async signToken(id: string, email: string): Promise<JwtToken> {
 		const secret: string | undefined = process.env.JWT_SECRET;
-		if (!secret) throw new Error("JWT_SECRET must be set."); // NEEDS ERROR HANDLING
+		if (!secret) throw new InternalServerErrorException("JWT_SECRET must be set.");
 
 		const jwtPayload = {
 			sub: id,

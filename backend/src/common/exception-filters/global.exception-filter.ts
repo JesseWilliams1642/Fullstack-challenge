@@ -16,35 +16,47 @@ export class HttpErrorFilter implements ExceptionFilter {
 		const status = exception.getStatus();
 		const exceptionResponse = exception.getResponse();
 
-		// Check exception response type; send message accordingly
+		let consoleLogMessage: Object = {};
+		let frontendLogMessage: Object = {};
+		let frontendMessage: string | Object = exceptionResponse;
 
+		// Determine error payload type
 		if (typeof exceptionResponse === "string") {
-			// Log to backend console
-			console.log({
+			consoleLogMessage = {
 				statusCode: status,
 				message: exceptionResponse,
 				timestamp: new Date().toISOString(),
-			});
+			};
 
-			// Send exception response to frontend
-			response.status(status).json({
+			// Do not give frontend data on internal server errors
+			if (status === 500) frontendMessage = "Internal server error";
+
+			frontendLogMessage = {
 				statusCode: status,
-				message: exceptionResponse,
+				message: frontendMessage,
 				timestamp: new Date().toISOString(),
-			});
+			};
 		} else {
-			// Log to backend console
-			console.log({
+			consoleLogMessage = {
 				statusCode: status,
 				...exceptionResponse,
 				timestamp: new Date().toISOString(),
-			});
+			};
 
-			// Send exception response to frontend
-			response.status(status).json({
-				...exceptionResponse,
+			// Do not give frontend data on internal server errors
+			if (status === 500) frontendMessage = { message: "Internal server error" };
+
+			frontendLogMessage = {
+				statusCode: status,
+				...(frontendMessage as Object),
 				timestamp: new Date().toISOString(),
-			});
+			};
 		}
+
+		// Send message to backend console
+		console.log(consoleLogMessage);
+
+		// Send message to frontend
+		response.status(status).json(frontendLogMessage);
 	}
 }

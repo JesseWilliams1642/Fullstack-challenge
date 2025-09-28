@@ -1,7 +1,11 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { Repository } from "typeorm";
-import { Inject } from "@nestjs/common";
+import {
+	Inject,
+	InternalServerErrorException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { Request } from "express";
 
 import { UserPayload } from "../types";
@@ -13,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		@Inject("USER_REPOSITORY") private userRepository: Repository<User>,
 	) {
 		const secret: string | undefined = process.env.JWT_SECRET;
-		if (!secret) throw new Error("JWT_SECRET must be set."); // NEEDS ERROR HANDLING
+		if (!secret) throw new InternalServerErrorException("JWT_SECRET must be set.");
 
 		// Use cookies to store the JWT tokens
 
@@ -38,11 +42,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 			where: { id: payload.sub, email: payload.email },
 		});
 
-		if (users.length === 0) throw new Error("Invalid JWT Token."); // NEEDS ERROR HANDLING
-		if (users.length > 1) throw new Error("Duplicate users found.");
+		if (users.length === 0) throw new UnauthorizedException("Invalid JWT Token.");
+		if (users.length > 1)
+			throw new InternalServerErrorException("Duplicate users found.");
 
 		// Good place to add roles to req if we were doing RBAC
 		const user: SafeUser = users[0];
+
 		return user;
 	}
 }

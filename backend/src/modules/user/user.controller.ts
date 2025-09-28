@@ -64,8 +64,6 @@ export class UserController {
 		@GetUser() user: SafeUser,
 		@Body() dto: CreateAppointmentDTO,
 	): Promise<SafeAppointment> {
-		if (!user) throw new Error("Request does not hold the JWT payload."); // NEEDS ERROR HANDLING. IS THIS NECESSARY??
-
 		const appointment: Appointment = await this.userService.addAppointment(
 			user.email,
 			dto.serviceID,
