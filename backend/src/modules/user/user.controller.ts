@@ -136,7 +136,7 @@ export class UserController {
 	@Delete("appointments")
 	async deleteAppointment(
 		@GetUser() user: SafeUser,
-		@Body() dto: DeleteAppointmentDTO,
+		@Param("id", ParseIntPipe) dto: DeleteAppointmentDTO,
 	): Promise<string> {
 		await this.userService.deleteAppointment(user.email, dto.appointmentID);
 		return "Appointment deleted successfully.";
