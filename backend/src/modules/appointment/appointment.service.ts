@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { Between, Repository } from "typeorm";
 
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
@@ -15,6 +15,9 @@ export class AppointmentService {
 		@Inject("STAFF_REPOSITORY") private staffRepository: Repository<Staff>,
 		@Inject("SERVICE_REPOSITORY") private serviceRepository: Repository<Service>,
 	) {}
+
+	// Get a list of available times for a specific service and staff member
+	// for a specific day
 
 	async getAvailabilities(
 		serviceID: string,
@@ -42,10 +45,20 @@ export class AppointmentService {
 			return [];
 
 		// Get staff appointments ordered by soonest appointment to latest
+		const nextDay: Date = new Date(day);
+		nextDay.setDate(nextDay.getDate() + 1); // Gives us the upper bound for the search
+
 		const staffAppointments: Appointment[] = await this.appointmentRepository
 			.createQueryBuilder("appointment")
 			.leftJoinAndSelect("appointment.service", "service")
 			.where("appointment.staff = :staffID", { staffID: staff.id })
+			.andWhere(
+				"appointment.startTimestamp >= :day AND appointment.startTimestamp <= :nextDay",
+				{
+					day,
+					nextDay,
+				},
+			)
 			.orderBy("appointment.startTimestamp", "ASC")
 			.getMany();
 
@@ -142,11 +155,29 @@ export class AppointmentService {
 			// If not working that day, return no dates
 			return false;
 
+		// Get only the day part of startDate, and get the next day
+
+		const day = new Date(
+			startDate.getFullYear(),
+			startDate.getMonth(),
+			startDate.getDate(),
+		);
+
+		const nextDay: Date = new Date(day);
+		nextDay.setDate(nextDay.getDate() + 1); // Gives us the upper bound for the search
+
 		// Get staff appointments ordered by soonest appointment to latest
 		let staffAppointments: Appointment[] = await this.appointmentRepository
 			.createQueryBuilder("appointment")
 			.leftJoinAndSelect("appointment.service", "service")
 			.where("appointment.staff = :staffID", { staffID: staff.id })
+			.andWhere(
+				"appointment.startTimestamp >= :day AND appointment.startTimestamp <= :nextDay",
+				{
+					day,
+					nextDay,
+				},
+			)
 			.orderBy("appointment.startTimestamp", "ASC")
 			.getMany();
 
@@ -156,14 +187,6 @@ export class AppointmentService {
 			staffAppointments = staffAppointments.filter(
 				(item) => item.id !== oldAppointment.id,
 			);
-
-		// Get only the day part of startDate
-
-		const day = new Date(
-			startDate.getFullYear(),
-			startDate.getMonth(),
-			startDate.getDate(),
-		);
 
 		// Get service-related information in milliseconds
 
@@ -220,10 +243,24 @@ export class AppointmentService {
 		startTime: Date,
 		oldAppointment?: Appointment,
 	): Promise<boolean> {
+		// Get only the day part of startDate, and get the next day
+
+		const day = new Date(
+			startTime.getFullYear(),
+			startTime.getMonth(),
+			startTime.getDate(),
+		);
+
+		const nextDay: Date = new Date(day);
+		nextDay.setDate(nextDay.getDate() + 1); // Gives us the upper bound for the search
+
 		// Was needed; service was not transferring over!
 		let preexistingAppointments: Appointment[] =
 			await this.appointmentRepository.find({
-				where: { user: user },
+				where: {
+					user: user,
+					startTimestamp: Between(day, nextDay),
+				},
 				relations: ["service"],
 			});
 

@@ -1,5 +1,7 @@
 import { CookieConfig } from "../types";
 
+// Cookie security configse
+
 export const cookieConfig: CookieConfig = {
 	httpOnly: true,
 	secure: false, // Set true if HTTPS set up

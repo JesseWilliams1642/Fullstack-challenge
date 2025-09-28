@@ -14,6 +14,8 @@ import { GetServiceDTO } from "./dto";
 export class ServiceController {
 	constructor(private serviceService: ServiceService) {}
 
+	// Get list of available services
+
 	@HttpCode(HttpStatus.OK)
 	@UseGuards(JwtGuard)
 	@Get()

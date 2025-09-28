@@ -14,6 +14,9 @@ export class AuthService {
 		private jwt: JwtService,
 	) {}
 
+	// Login, checking for user existence and comparing the password
+	// Returns a token signed using the user ID and email
+
 	async login(dto: AuthDTO): Promise<JwtToken> {
 		const email: string = dto.email;
 		const password: string = dto.password;
@@ -30,6 +33,9 @@ export class AuthService {
 		return await this.signToken(user.id, user.email);
 	}
 
+	// Sign a token using the id, email and a secret
+	// Set its expiration time to 1 hour
+
 	async signToken(id: string, email: string): Promise<JwtToken> {
 		const secret: string | undefined = process.env.JWT_SECRET;
 		if (!secret) throw new Error("JWT_SECRET must be set."); // NEEDS ERROR HANDLING
@@ -40,7 +46,7 @@ export class AuthService {
 		};
 
 		const token: string = await this.jwt.signAsync(jwtPayload, {
-			expiresIn: "15m",
+			expiresIn: "1h",
 			secret,
 		});
 

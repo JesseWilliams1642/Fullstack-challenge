@@ -15,6 +15,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		const secret: string | undefined = process.env.JWT_SECRET;
 		if (!secret) throw new Error("JWT_SECRET must be set."); // NEEDS ERROR HANDLING
 
+		// Use cookies to store the JWT tokens
+
 		super({
 			jwtFromRequest: ExtractJwt.fromExtractors([
 				(req: Request): string | null => {

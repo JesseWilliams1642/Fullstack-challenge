@@ -17,7 +17,9 @@ import { cookieConfig } from "../../common/config";
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	@HttpCode(HttpStatus.OK) // Http Code 200
+	// Login using email and password, retrieving JWT token
+
+	@HttpCode(HttpStatus.OK)
 	@Post("login")
 	async login(
 		@Body() dto: AuthDTO,
@@ -30,7 +32,9 @@ export class AuthController {
 		return "Logged in successfully.";
 	}
 
-	@HttpCode(HttpStatus.OK) // Http Code 200
+	// Logout, clearing the JWT token
+
+	@HttpCode(HttpStatus.OK)
 	@Post("logout")
 	logout(@Res({ passthrough: true }) res: Response): string {
 		res.clearCookie("JWT_fullstack");

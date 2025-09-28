@@ -1,5 +1,5 @@
-// Needed to prevent recursion issues when retrieving appointments
-// for a user
+// Needed to prevent recursion issues when retrieving
+// appointments for a user
 
 export interface SafeAppointment {
 	id: string;

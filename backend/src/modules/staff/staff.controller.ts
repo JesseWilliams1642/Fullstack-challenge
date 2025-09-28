@@ -14,6 +14,8 @@ import { GetStaffDTO } from "./dto";
 export class StaffController {
 	constructor(private staffService: StaffService) {}
 
+	// Get a list of all available staff members
+
 	@HttpCode(HttpStatus.OK)
 	@UseGuards(JwtGuard)
 	@Get()

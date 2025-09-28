@@ -16,16 +16,35 @@ export class HttpErrorFilter implements ExceptionFilter {
 		const status = exception.getStatus();
 		const exceptionResponse = exception.getResponse();
 
-		if (typeof exceptionResponse === "string")
+		// Check exception response type; send message accordingly
+
+		if (typeof exceptionResponse === "string") {
+			// Log to backend console
+			console.log({
+				statusCode: status,
+				message: exceptionResponse,
+				timestamp: new Date().toISOString(),
+			});
+
+			// Send exception response to frontend
 			response.status(status).json({
 				statusCode: status,
 				message: exceptionResponse,
 				timestamp: new Date().toISOString(),
 			});
-		else
+		} else {
+			// Log to backend console
+			console.log({
+				statusCode: status,
+				...exceptionResponse,
+				timestamp: new Date().toISOString(),
+			});
+
+			// Send exception response to frontend
 			response.status(status).json({
 				...exceptionResponse,
 				timestamp: new Date().toISOString(),
 			});
+		}
 	}
 }

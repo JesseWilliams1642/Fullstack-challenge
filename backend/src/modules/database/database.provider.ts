@@ -4,6 +4,8 @@ import { Appointment } from "../appointment/appointment.entity";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
 
+// Set up TypeORM repository and export it
+
 export const databaseProvider = {
 	provide: "DATA_SOURCE",
 	useFactory: async () => {

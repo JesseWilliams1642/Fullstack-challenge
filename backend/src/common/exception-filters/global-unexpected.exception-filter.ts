@@ -16,7 +16,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 		const status = exception instanceof HttpException ? exception.getStatus() : 500;
 
-		const message =
+		const message: string =
 			exception instanceof Error ? exception.message : "Internal server error";
 
 		response.status(status).json({

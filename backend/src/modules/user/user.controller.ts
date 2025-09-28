@@ -25,8 +25,6 @@ import {
 } from "./dto";
 import { SafeAppointment } from "../appointment/types";
 
-// Note: Guards can be used at the controller level, as well as at the end-point level
-// @UseGuards(JwtGuard)
 @Controller("api/user")
 export class UserController {
 	constructor(private userService: UserService) {}
@@ -146,8 +144,6 @@ export class UserController {
 		@GetUser() _user: SafeUser,
 		@Body() dto: EditAppointmentDTO,
 	): Promise<SafeAppointment> {
-		if (!_user) throw new Error("Request does not hold the JWT payload."); // NEEDS ERROR HANDLING. IS THIS NECESSARY??
-
 		const appointment: Appointment = await this.userService.editAppointment(
 			_user.email,
 			dto,
@@ -175,10 +171,7 @@ export class UserController {
 		@GetUser() user: SafeUser,
 		@Body() dto: DeleteAppointmentDTO,
 	): Promise<string> {
-		if (!user) throw new Error("Request does not hold the JWT payload."); // NEEDS ERROR HANDLING. IS THIS NECESSARY??
-
 		await this.userService.deleteAppointment(user.email, dto.appointmentID);
-
 		return "Appointment deleted successfully.";
 	}
 }

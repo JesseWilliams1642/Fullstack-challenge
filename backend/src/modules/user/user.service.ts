@@ -22,6 +22,7 @@ export class UserService {
 		private readonly appointmentService: AppointmentService,
 	) {}
 
+	// Create a new user and add it to the database
 	async createUser(
 		email: string,
 		password: string,
@@ -44,6 +45,8 @@ export class UserService {
 		};
 	}
 
+	// Add a new appointment, making sure it is available (no double booking or overlapping)
+
 	async addAppointment(
 		email: string,
 		serviceID: string,
@@ -51,7 +54,6 @@ export class UserService {
 		staffID: string,
 	): Promise<Appointment> {
 		// Get entities from respective repositories
-
 		const user: User | null = await this.userRepository.findOneBy({ email: email });
 		if (!user) throw new Error(`User could not be found for email ${email}.`); // NEEDS ERROR HANDLING
 
@@ -92,6 +94,7 @@ export class UserService {
 		} else throw new Error("Appointment is unavailable."); // NEEDS ERROR HANDLING
 	}
 
+	// Get user appointments for display
 	async getAppointments(email: string): Promise<Appointment[]> {
 		const user: User | null = await this.userRepository.findOne({
 			where: { email: email },
@@ -100,9 +103,14 @@ export class UserService {
 		if (!user) throw new Error(`User could not be found for email ${email}.`); // NEEDS ERROR HANDLING
 
 		user.appointments = user.appointments || [];
-		return user.appointments;
+		const sortedAppointments: Appointment[] = user.appointments.sort(
+			(a, b) =>
+				new Date(a.startTimestamp).getTime() - new Date(b.startTimestamp).getTime(),
+		);
+		return sortedAppointments;
 	}
 
+	// Get a limited number of appointments for display
 	async getLimitedAppointments(
 		email: string,
 		numAppointments: string,
@@ -118,15 +126,23 @@ export class UserService {
 		});
 		if (!user) throw new Error(`User could not be found for email ${email}.`); // NEEDS ERROR HANDLING
 
-		if ((user.appointments || []).length < returnSize)
+		user.appointments = user.appointments || [];
+		if (user.appointments.length < returnSize)
 			returnSize = (user.appointments || []).length;
+
+		const sortedAppointments: Appointment[] = user.appointments.sort(
+			(a, b) =>
+				new Date(a.startTimestamp).getTime() - new Date(b.startTimestamp).getTime(),
+		);
 
 		const appointmentList: Appointment[] = [];
 		for (let i = 0; i < returnSize; i++)
-			appointmentList.push((user.appointments || [])[i]);
+			appointmentList.push(sortedAppointments[i]);
 
 		return appointmentList;
 	}
+
+	// Edit details of the appointment, and check if the changes are possible
 
 	async editAppointment(
 		email: string,
@@ -200,12 +216,13 @@ export class UserService {
 		} else throw new Error("Appointment is unavailable."); // NEEDS ERROR HANDLING
 	}
 
+	// Delete an appointment, update employee and staff appointment lists accordingly
+
 	async deleteAppointment(email: string, appointmentID: string): Promise<void> {
 		// Get user and to-be-deleted appointment
-
 		const user: User | null = await this.userRepository.findOne({
 			where: { email: email },
-			relations: ["appointments"],
+			relations: ["appointments", "appointments.staff"],
 		});
 		if (!user) throw new Error(`User could not be found for email ${email}.`); // NEEDS ERROR HANDLING
 
@@ -218,11 +235,30 @@ export class UserService {
 
 		if (!appointment) throw new Error("Appointment is not owned by the User");
 
+		// Get staff member associated with the appointment
+		const staff: Staff | null = await this.staffRepository.findOne({
+			where: { id: appointment.staff.id },
+			relations: ["appointments"],
+		});
+		if (!staff)
+			throw new Error(`Staff could not be found for email ${appointment.staff.id}.`); // NEEDS ERROR HANDLING
+
+		if (!staff.appointments)
+			throw new Error("Staff does not contain any appointments.");
+
+		// Remove appointment from user
 		user.appointments = user.appointments.filter(
 			(item) => item.id !== appointment.id,
 		);
 		await this.userRepository.save(user);
 
+		// Remove appointment from staff
+		staff.appointments = staff.appointments.filter(
+			(item) => item.id !== appointment.id,
+		);
+		await this.staffRepository.save(staff);
+
+		// Remove appointment
 		await this.appointmentRepository.delete(appointment);
 	}
 }

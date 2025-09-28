@@ -1,3 +1,6 @@
+// Utility function to convert PostgresInterval values from its
+// "string" (object thought of as a string by TS) to milliseconds
+
 interface PostgresInterval {
 	years: number;
 	months: number;
