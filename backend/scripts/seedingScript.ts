@@ -2,11 +2,11 @@ import { NestFactory } from "@nestjs/core";
 import { INestApplicationContext } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
 
-import { AppModule } from "../app.module";
-import { Staff } from "../modules/staff/staff.entity";
-import { User } from "../modules/user/user.entity";
-import { Service } from "../modules/service/service.entity";
-import { hashPassword } from "../common/utils/hash";
+import { AppModule } from "../src/app.module";
+import { Staff } from "../src/modules/staff/staff.entity";
+import { User } from "../src/modules/user/user.entity";
+import { Service } from "../src/modules/service/service.entity";
+import { hashPassword } from "../src/common/utils/hash";
 
 async function bootstrap() {
 	const app: INestApplicationContext =
