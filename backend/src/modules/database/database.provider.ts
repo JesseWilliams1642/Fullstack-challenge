@@ -21,7 +21,7 @@ export const databaseProvider = {
 			database: process.env.DB_NAME || "db",
 			entities: [User, Appointment, Service, Staff],
 			synchronize: true,
-			logging: true,
+			logging: (process.env.DB_LOGGING as unknown as boolean) || false,
 		});
 
 		return dataSource.initialize();
