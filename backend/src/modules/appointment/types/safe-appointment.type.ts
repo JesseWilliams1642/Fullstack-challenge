@@ -6,7 +6,7 @@ export interface SafeAppointment {
 	startTimestamp: Date;
 	serviceID: string;
 	serviceName: string;
-	serviceDuration: object;
+	serviceDuration: string;
 	serviceDescription: string;
 	staffID: string;
 	staffName: string;
