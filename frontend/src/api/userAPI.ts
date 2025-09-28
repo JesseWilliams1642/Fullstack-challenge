@@ -10,7 +10,7 @@ export const getAppointments = async (): Promise<
 };
 
 export const getLimitedAppointments = async (
-	id: number,
+	id: string,
 ): Promise<APIResponse<SafeAppointment[]>> => {
 	return axiosInstance.get(`/api/user/appointments/:${id}`, {
 		withCredentials: true,
@@ -34,7 +34,7 @@ export const editAppointment = async (
 };
 
 export const deleteAppointment = async (
-	id: number,
+	id: string,
 ): Promise<APIResponse<string>> => {
 	return axiosInstance.delete(`/api/user/appointments/:${id}`, {
 		withCredentials: true,

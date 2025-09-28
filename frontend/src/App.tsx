@@ -1,50 +1,46 @@
-import { useEffect, useState, type JSX } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { getHelloWorld } from './api/testApi'
+import { useState } from "react";
+import { AuthProvider } from "./providers/authProvider";
+import { Header } from "./components/Header";
+import { HomePage } from "./components/HomePage";
+import { LoginPage } from "./components/LoginPage";
+import { RegisterPage } from "./components/RegisterPage";
+import { ProfilePage } from "./components/ProfilePage";
+
+type Page = "home" | "login" | "register" | "profile";
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [phrase, setPhrase] = useState("");
+	const [currentPage, setCurrentPage] = useState<Page>("home");
 
-  useEffect(() => {
-    getHelloWorld()
-      .then((response) => {
-        setPhrase(response);
-      })
-    }
-  );
+	const handleNavigate = (page: string) => {
+		setCurrentPage(page as Page);
+	};
 
-  const element: JSX.Element = <p> {phrase} </p>;
+	const renderPage = () => {
+		switch (currentPage) {
+			case "home":
+				return <HomePage onNavigate={handleNavigate} />;
+			case "login":
+				return <LoginPage onNavigate={handleNavigate} />;
+			case "register":
+				return <RegisterPage onNavigate={handleNavigate} />;
+			case "profile":
+				return <ProfilePage onNavigate={handleNavigate} />;
+			default:
+				return <HomePage onNavigate={handleNavigate} />;
+		}
+	};
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => {
-          setCount((count) => count + 1);
-          }}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-        ${element}
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+	return (
+		<AuthProvider>
+			<div className="min-h-screen bg-gray-50">
+				<Header
+					onNavigate={handleNavigate}
+					currentPage={currentPage}
+				/>
+				{renderPage()}
+			</div>
+		</AuthProvider>
+	);
 }
 
-export default App
+export default App;

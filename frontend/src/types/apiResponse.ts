@@ -1,4 +1,4 @@
 export interface APIResponse<T> {
-	data: T;
-	error: Object;
+	data: T | null;
+	error: Error | null;
 }
