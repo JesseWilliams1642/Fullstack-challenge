@@ -1,9 +1,6 @@
 // For alerting a returned error to the user
 
 export function showError(error: any) {
-	console.log(error);
-	console.log(JSON.stringify(error));
-
 	let message = "";
 	if (error?.message) message = error.message;
 	if (error?.response?.data?.error?.message)

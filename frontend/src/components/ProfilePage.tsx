@@ -27,7 +27,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 
 	useEffect(() => {
 		if (user) loadAppointments();
-		else onNavigate("login");
+		else {
+			//console.log(user);
+			onNavigate("login");
+		}
 	}, [user]);
 
 	const loadAppointments = async () => {

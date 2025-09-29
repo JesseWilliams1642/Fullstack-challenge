@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Scissors, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { login } from "../api/authAPI";
 import { showError } from "../lib/showError";
+import { useAuth } from "../hooks/useAuth";
 
 interface LoginPageProps {
 	onNavigate: (page: string) => void;
@@ -12,17 +13,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 	onNavigate,
 	registerSuccess,
 }) => {
+	const { refetchUser } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [justRegistered, setRegistered] = useState(registerSuccess);
-	const [loginSuccess, setLoginSuccess] = useState(false);
-
-	React.useEffect(() => {
-		if (loginSuccess) onNavigate("profile");
-	}, [loginSuccess]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -38,7 +35,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 			if (error)
 				if (typeof error.message === "string") setError(error.message);
 				else showError(error);
-			else setLoginSuccess(true);
+			else {
+				await refetchUser(); // Get new User now that we are logged in
+				onNavigate("profile");
+			}
 		} catch (error: any) {
 			if (error?.response?.data?.error?.message?.message)
 				setError(error.response.data.error.message.message);
