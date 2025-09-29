@@ -22,11 +22,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 		// Show error in console log
 
-		console.log({
-			statusCode: status,
-			message,
-			timestamp: new Date().toISOString(),
-		});
+		const backendMessage: APIResponse<null> = {
+			data: null,
+			error: {
+				statusCode: status,
+				message: message,
+				timestamp: new Date().toISOString(),
+			}
+		}
+		console.log(backendMessage);
 
 		// Do send exception.message for unknown error types
 		// Do not want potential data leaks
