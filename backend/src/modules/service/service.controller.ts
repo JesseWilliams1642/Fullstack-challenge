@@ -8,6 +8,7 @@ import {
 import { JwtGuard } from "../../common/guards";
 import { ServiceService } from "./service.service";
 import { GetServiceDTO } from "./dto";
+import { APIResponse } from "src/common/types";
 
 @UseGuards(JwtGuard)
 @Controller("api/service")
@@ -19,7 +20,10 @@ export class ServiceController {
 	@HttpCode(HttpStatus.OK)
 	@UseGuards(JwtGuard)
 	@Get()
-	async getServices(): Promise<GetServiceDTO[]> {
-		return await this.serviceService.getServices();
+	async getServices(): Promise<APIResponse<GetServiceDTO[]>> {
+		return {
+			data: await this.serviceService.getServices(),
+			error: null
+		};
 	}
 }

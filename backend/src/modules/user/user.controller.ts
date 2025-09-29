@@ -14,7 +14,7 @@ import {
 
 import { UserService } from "./user.service";
 import { Appointment } from "../appointment/appointment.entity";
-import type { SafeUser } from "../../common/types";
+import type { APIResponse, SafeUser } from "../../common/types";
 import { JwtGuard } from "../../common/guards";
 import { GetUser } from "../../common/decorators";
 import {
@@ -36,7 +36,7 @@ export class UserController {
 	async addAppointment(
 		@GetUser() user: SafeUser,
 		@Body() dto: CreateAppointmentDTO,
-	): Promise<SafeAppointment> {
+	): Promise<APIResponse<SafeAppointment>> {
 		const appointment: Appointment = await this.userService.addAppointment(
 			user.email,
 			dto.serviceID,
@@ -54,14 +54,14 @@ export class UserController {
 			staffID: appointment.staff.id,
 			staffName: appointment.staff.name,
 		};
-		return safeAppointment;
+		return { data: safeAppointment, error: null };
 	}
 
 	// Get all appointments
 
 	@HttpCode(HttpStatus.OK)
 	@Get("appointments")
-	async getAppointments(@GetUser() user: SafeUser): Promise<SafeAppointment[]> {
+	async getAppointments(@GetUser() user: SafeUser): Promise<APIResponse<SafeAppointment[]>> {
 		const appointments: Appointment[] = await this.userService.getAppointments(
 			user.email,
 		);
@@ -77,7 +77,7 @@ export class UserController {
 			staffName: item.staff.name,
 		}));
 
-		return safeAppointments;
+		return { data: safeAppointments, error: null };
 	}
 
 	// Get a limited number (id) of appointments
@@ -87,7 +87,7 @@ export class UserController {
 	async getLimitedAppointments(
 		@GetUser() user: SafeUser,
 		@Param("id", ParseIntPipe) numAppointments: string,
-	): Promise<SafeAppointment[]> {
+	): Promise<APIResponse<SafeAppointment[]>> {
 		const appointments: Appointment[] =
 			await this.userService.getLimitedAppointments(user.email, numAppointments);
 
@@ -101,7 +101,7 @@ export class UserController {
 			staffID: item.staff.id,
 			staffName: item.staff.name,
 		}));
-		return safeAppointments;
+		return { data: safeAppointments, error: null };
 	}
 
 	// Edit an appointment
@@ -111,7 +111,7 @@ export class UserController {
 	async editAppointment(
 		@GetUser() _user: SafeUser,
 		@Body() dto: EditAppointmentDTO,
-	): Promise<SafeAppointment> {
+	): Promise<APIResponse<SafeAppointment>> {
 		const appointment: Appointment = await this.userService.editAppointment(
 			_user.email,
 			dto,
@@ -127,7 +127,7 @@ export class UserController {
 			staffID: appointment.staff.id,
 			staffName: appointment.staff.name,
 		};
-		return safeAppointment;
+		return { data: safeAppointment, error: null };
 	}
 
 	// Delete an appointment
@@ -137,8 +137,8 @@ export class UserController {
 	async deleteAppointment(
 		@GetUser() user: SafeUser,
 		@Param("id", ParseIntPipe) dto: DeleteAppointmentDTO,
-	): Promise<string> {
+	): Promise<APIResponse<string>> {
 		await this.userService.deleteAppointment(user.email, dto.appointmentID);
-		return "Appointment deleted successfully.";
+		return { data: "Appointment deleted successfully.", error: null };
 	}
 }

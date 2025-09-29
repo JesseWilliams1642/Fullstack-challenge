@@ -5,6 +5,7 @@ import {
 	HttpException,
 } from "@nestjs/common";
 import { Response } from "express";
+import { ErrorMessage } from "../types/error-message.type";
 
 // Catches all HTTP exceptions (those that we throw)
 
@@ -16,47 +17,26 @@ export class HttpErrorFilter implements ExceptionFilter {
 		const status = exception.getStatus();
 		const exceptionResponse = exception.getResponse();
 
-		let consoleLogMessage: Object = {};
-		let frontendLogMessage: Object = {};
+		// Do not give frontend data on internal server errors
 		let frontendMessage: string | Object = exceptionResponse;
+		if (status === 500) frontendMessage = "Internal server error";
 
-		// Determine error payload type
-		if (typeof exceptionResponse === "string") {
-			consoleLogMessage = {
-				statusCode: status,
-				message: exceptionResponse,
-				timestamp: new Date().toISOString(),
-			};
+		const consoleLogMessage: ErrorMessage = {
+			statusCode: status,
+			message: exceptionResponse,
+			timestamp: new Date().toISOString(),
+		};
 
-			// Do not give frontend data on internal server errors
-			if (status === 500) frontendMessage = "Internal server error";
-
-			frontendLogMessage = {
-				statusCode: status,
-				message: frontendMessage,
-				timestamp: new Date().toISOString(),
-			};
-		} else {
-			consoleLogMessage = {
-				statusCode: status,
-				...exceptionResponse,
-				timestamp: new Date().toISOString(),
-			};
-
-			// Do not give frontend data on internal server errors
-			if (status === 500) frontendMessage = { message: "Internal server error" };
-
-			frontendLogMessage = {
-				statusCode: status,
-				...(frontendMessage as Object),
-				timestamp: new Date().toISOString(),
-			};
-		}
+		const frontendLogMessage: ErrorMessage = {
+			statusCode: status,
+			message: frontendMessage,
+			timestamp: new Date().toISOString(),
+		};
 
 		// Send message to backend console
-		console.log(consoleLogMessage);
+		console.log({ data: null, error: consoleLogMessage });
 
 		// Send message to frontend
-		response.status(status).json(frontendLogMessage);
+		response.status(status).json({ data: null, error: frontendLogMessage});
 	}
 }

@@ -5,6 +5,7 @@ import {
 	HttpException,
 } from "@nestjs/common";
 import { Response } from "express";
+import { APIResponse } from "../types";
 
 // Catches all other (unexpected) exceptions
 
@@ -30,10 +31,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
 		// Do send exception.message for unknown error types
 		// Do not want potential data leaks
 
-		response.status(status).json({
-			statusCode: status,
-			message: "Internal server error",
-			timestamp: new Date().toISOString(),
-		});
+		const responseMessage: APIResponse<null> = {
+			data: null,
+			error: {
+				statusCode: status,
+				message: "Internal server error",
+				timestamp: new Date().toISOString(),
+			}
+		}
+
+		response.status(status).json(responseMessage);
 	}
 }
