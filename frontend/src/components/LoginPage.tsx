@@ -20,13 +20,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 		setLoading(true);
 		setError("");
 
-		const { data, error } = await login({ email, password }); // JESSE: LOGIN API + CHANGE RETURN TO VOID
+		const { data: _ , error } = await login({ email, password }); 
 
-		if (error) {
-			setError(error.message);
-		} else {
-			onNavigate("profile");
-		}
+		if (error) setError(error.message);
+		else onNavigate("profile");
 
 		setLoading(false);
 	};

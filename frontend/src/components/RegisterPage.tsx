@@ -32,7 +32,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 		setLoading(true);
 		setError("");
 
-		const { error } = await register({ email, password, name });
+		const { data: _, error } = await register({ email, password, name });
 
 		if (error) {
 			setError(error.message);

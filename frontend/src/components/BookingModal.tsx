@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { X, Calendar, Clock, User, Scissors } from "lucide-react";
-import { Service, StaffMember, Appointment, TimeSlot } from "../types";
 import { useAuth } from "../hooks/useAuth";
+import { getServices } from "../api/serviceAPI";
+import type { GetStaffDTO } from "../dtos/staff";
+import type { GetServiceDTO } from "../dtos/service";
+import { getStaff } from "../api/staffAPI";
+import { getAppointmentAvailability } from "../api/appointmentAPI";
+import type { SafeAppointment } from "../types/safeAppointment";
+import type { APIResponse } from "../types/apiResponse";
+import { createAppointment, editAppointment } from "../api/userAPI";
 
 interface BookingModalProps {
-	appointment?: Appointment | null;
+	appointment?: SafeAppointment | null;
 	onClose: () => void;
 	onSuccess: () => void;
 }
@@ -14,23 +21,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	onClose,
 	onSuccess,
 }) => {
-	const { user, loading } = useAuth();
-	const [services, setServices] = useState<Service[]>([]);
-	const [staff, setStaff] = useState<StaffMember[]>([]);
+	const { user } = useAuth();
+	const [services, setServices] = useState<GetServiceDTO[]>([]);
+	const [staff, setStaff] = useState<GetStaffDTO[]>([]);
 	const [selectedService, setSelectedService] = useState<string>(
-		appointment?.service_id || "",
+		appointment?.serviceID || "",
 	);
 	const [selectedStaff, setSelectedStaff] = useState<string>(
-		appointment?.staff_id || "",
+		appointment?.staffID || "",
 	);
 	const [selectedDate, setSelectedDate] = useState<string>(
-		appointment?.appointment_date || "",
+		appointment?.dateString || "",
 	);
 	const [selectedTime, setSelectedTime] = useState<string>(
-		appointment?.appointment_time || "",
+		appointment?.timeString || "",
 	);
-	const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-	const [notes, setNotes] = useState<string>(appointment?.notes || "");
+	const [timeSlots, setTimeSlots] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -46,60 +52,45 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	}, [selectedDate, selectedStaff]);
 
 	const loadServices = async () => {
-		const { data, error } = await supabase
-			.from("services")
-			.select("*")
-			.order("name");
+		const { data, error } = await getServices();
 
-		if (error) {
-			console.error("Error loading services:", error);
-		} else {
-			setServices(data || []);
-		}
+		if (error) console.error("Error loading services:", error);
+		else setServices(data || []);
+
 	};
 
 	const loadStaff = async () => {
-		const { data, error } = await supabase
-			.from("staff_members")
-			.select("*")
-			.order("name");
+		const { data, error } = await getStaff();
 
-		if (error) {
-			console.error("Error loading staff:", error);
-		} else {
-			setStaff(data || []);
-		}
+		if (error) console.error("Error loading staff:", error);
+		else setStaff(data || []);
+		
 	};
 
 	const generateTimeSlots = async () => {
-		const slots: TimeSlot[] = [];
-		const startHour = 9;
-		const endHour = 18;
+		const { data: slots, error: _ } = await getAppointmentAvailability({
+			serviceID: selectedService, 
+			date: selectedDate, 
+			time: selectedTime, 
+			staffID: selectedStaff
+		});
 
-		// Get existing appointments for this staff member on this date
-		const { data: existingAppointments } = await supabase
-			.from("appointments")
-			.select("appointment_time")
-			.eq("staff_id", selectedStaff)
-			.eq("appointment_date", selectedDate)
-			.neq("id", appointment?.id || ""); // Exclude current appointment if editing
+		const tempTimeSlots: string[] = [];
+		if (slots)
+			for (let time of slots) {
 
-		const bookedTimes =
-			existingAppointments?.map((app) => app.appointment_time) || [];
+				let hour: number = time.getHours();
+				const minute: number = time.getMinutes();
+				const suffix: string = hour >= 12 ? "PM" : "AM";
+				hour = hour % 12;			// So 14 --> 2
+				hour = hour ? hour : 12;	// Changes 0 --> 12
 
-		for (let hour = startHour; hour < endHour; hour++) {
-			for (let minute = 0; minute < 60; minute += 30) {
-				const timeString = `${hour.toString().padStart(2, "0")}:${minute
-					.toString()
-					.padStart(2, "0")}`;
-				slots.push({
-					time: timeString,
-					available: !bookedTimes.includes(timeString),
-				});
+				const minuteFormatted: string = String(minute).padStart(2,'0');	
+				tempTimeSlots.push(`${hour}:${minuteFormatted} ${suffix}`);
+
 			}
-		}
 
-		setTimeSlots(slots);
+		setTimeSlots(tempTimeSlots);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -118,31 +109,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 		setLoading(true);
 		setError("");
 
-		const appointmentData = {
-			user_id: user.id,
-			service_id: selectedService,
-			staff_id: selectedStaff,
-			appointment_date: selectedDate,
-			appointment_time: selectedTime,
-			status: "scheduled",
-			notes: notes || null,
-		};
+		let result: APIResponse<SafeAppointment>;
+		if (appointment) result = await editAppointment({
+			appointmentID: appointment.id,
+			serviceID: selectedService,
+			staffID: selectedStaff,
+			date: selectedDate,
+			time: selectedTime
+		});
+		else result = await createAppointment({
+			serviceID: selectedService,
+			staffID: selectedStaff,
+			date: selectedDate,
+			time: selectedTime
+		});
 
-		let result;
-		if (appointment) {
-			result = await supabase
-				.from("appointments")
-				.update(appointmentData)
-				.eq("id", appointment.id);
-		} else {
-			result = await supabase.from("appointments").insert([appointmentData]);
-		}
-
-		if (result.error) {
-			setError(result.error.message);
-		} else {
-			onSuccess();
-		}
+		if (result.error) setError(result.error.message);
+		else onSuccess();
 
 		setLoading(false);
 	};
@@ -196,7 +179,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 									key={service.id}
 									value={service.id}
 								>
-									{service.name} - ${service.price} ({service.duration} min)
+									{service.serviceName} - ({service.serviceDuration} min)
 								</option>
 							))}
 						</select>
@@ -252,38 +235,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 							<div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
 								{timeSlots.map((slot) => (
 									<button
-										key={slot.time}
+										key={slot}
 										type="button"
-										disabled={!slot.available}
-										onClick={() => setSelectedTime(slot.time)}
-										className={`px-3 py-2 text-sm rounded-md border transition-colors ${
-											selectedTime === slot.time
-												? "bg-rose-600 text-white border-rose-600"
-												: slot.available
-												? "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-												: "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-										}`}
+										disabled={false}
+										onClick={() => setSelectedTime(slot)}
+										className={`px-3 py-2 text-sm rounded-md border transition-colors bg-rose-600 text-white border-rose-600`}
 									>
-										{slot.time}
+										{slot}
 									</button>
 								))}
 							</div>
 						</div>
 					)}
-
-					{/* Notes */}
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							Notes (Optional)
-						</label>
-						<textarea
-							value={notes}
-							onChange={(e) => setNotes(e.target.value)}
-							rows={3}
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-							placeholder="Any special requests or notes for your stylist..."
-						/>
-					</div>
 
 					{/* Submit Button */}
 					<div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">

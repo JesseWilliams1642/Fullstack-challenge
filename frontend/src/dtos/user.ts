@@ -1,12 +1,14 @@
 export class CreateAppointmentDTO {
 	serviceID!: string;
-	startDate!: string;
+	date!: string;
+	time!: string;
 	staffID!: string;
 }
 
 export class EditAppointmentDTO {
 	appointmentID!: string;
-	serviceID!: string;
-	startDate!: string;
-	staffID!: string;
+	serviceID?: string;
+	date?: string;
+	time?: string;
+	staffID?: string;
 }

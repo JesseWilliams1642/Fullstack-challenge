@@ -7,7 +7,7 @@ import type { AuthenticatedUser } from "../types/user";
 
 export interface AuthContextType {
 	user: AuthenticatedUser | null;
-	loading: boolean;
+	userLoaded: boolean;
 	setUser: (user: AuthenticatedUser | null) => void;
 }
 
@@ -17,7 +17,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = useState<AuthenticatedUser | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [userLoaded, setLoading] = useState(true);
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	}, []);
 
 	return (
-		<AuthContext.Provider value={{ user, loading, setUser }}>
+		<AuthContext.Provider value={{ user, userLoaded, setUser }}>
 			{children}
 		</AuthContext.Provider>
 	);

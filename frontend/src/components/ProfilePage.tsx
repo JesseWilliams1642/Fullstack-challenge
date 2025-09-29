@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
 	Calendar,
 	Clock,
-	DollarSign,
 	CreditCard as Edit,
 	Trash2,
 	Plus,
@@ -18,40 +17,37 @@ interface ProfilePageProps {
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
-	const { user, loading } = useAuth();
+	const { user, userLoaded } = useAuth();
 	const [appointments, setAppointments] = useState<SafeAppointment[]>([]);
+	const [loading, setLoading] = useState(true);
 	const [showBookingModal, setShowBookingModal] = useState(false);
 	const [editingAppointment, setEditingAppointment] =
 		useState<SafeAppointment | null>(null);
 
 	useEffect(() => {
-		if (user) {
-			loadAppointments();
-		}
+		if (user) loadAppointments();
 	}, [user]);
 
 	const loadAppointments = async () => {
 		if (!user) return;
 
+		setLoading(true);
 		const { data, error } = await getAppointments();
 
-		if (error) {
-			console.error("Error loading appointments:", error);
-		} else {
-			setAppointments(data || []);
-		}
+		if (error) console.error("Error loading appointments:", error);
+		else setAppointments(data || []);
+		
+		setLoading(false);
 	};
 
 	const handleDeleteAppointment = async (appointmentId: string) => {
 		if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
-		const { data, error } = await deleteAppointment(appointmentId);
+		const { data: _ , error } = await deleteAppointment(appointmentId);
 
-		if (error) {
-			console.error("Error deleting appointment:", error);
-		} else {
-			loadAppointments();
-		}
+		if (error) console.error("Error deleting appointment:", error);
+		else loadAppointments();
+		
 	};
 
 	const handleEditAppointment = (appointment: SafeAppointment) => {
@@ -63,15 +59,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 		setShowBookingModal(false);
 		setEditingAppointment(null);
 		loadAppointments();
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString("en-US", {
-			weekday: "long",
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		});
 	};
 
 	if (!user) {
@@ -110,7 +97,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 				<div className="bg-white rounded-xl shadow-lg p-6">
 					<h2 className="text-xl font-bold text-gray-900 mb-6">Your Appointments</h2>
 
-					{loading ? (
+					{loading && userLoaded ? (
 						<div className="flex justify-center py-12">
 							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
 						</div>
@@ -136,7 +123,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 										<div className="flex-1">
 											<div className="flex items-center mb-2">
 												<h3 className="text-lg font-semibold text-gray-900 mr-4">
-													{appointment.service?.name}
+													{appointment.serviceName}
 												</h3>
 												<span
 													className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -154,26 +141,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 											<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
 												<div className="flex items-center">
 													<Calendar className="h-4 w-4 mr-2" />
-													{formatDate(appointment.appointment_date)}
+													{appointment.dateString}
 												</div>
 												<div className="flex items-center">
 													<Clock className="h-4 w-4 mr-2" />
-													{appointment.appointment_time}
-												</div>
-												<div className="flex items-center">
-													<DollarSign className="h-4 w-4 mr-2" />${appointment.service?.price}
+													{appointment.timeString}
 												</div>
 											</div>
 
 											<p className="text-gray-600 mt-2">
-												<strong>Stylist:</strong> {appointment.staff?.name}
+												<strong>Stylist:</strong> {appointment.staffName}
 											</p>
 
-											{appointment.notes && (
-												<p className="text-gray-600 mt-2">
-													<strong>Notes:</strong> {appointment.notes}
-												</p>
-											)}
 										</div>
 
 										<div className="flex space-x-2 ml-4">

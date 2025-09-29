@@ -1,6 +1,7 @@
 import React from "react";
 import { Scissors, User, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { logout } from "../api/authAPI";
 
 interface HeaderProps {
 	onNavigate: (page: string) => void;
@@ -8,10 +9,10 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
-	const { user, loading } = useAuth(); // JESSE: USE LOADING
+	const { user, userLoaded: _ } = useAuth(); 
 
 	const handleSignOut = async () => {
-		//await auth.signOut(); // JESSE: AUTH SIGNOUT API
+		await logout();
 		onNavigate("home");
 	};
 
