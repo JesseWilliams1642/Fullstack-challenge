@@ -14,6 +14,9 @@ export class Service {
 	@Column({ name: "service_description", type: "varchar", nullable: false })
 	serviceDescription!: string;
 
+	@Column({ name: "service_image", type: "varchar", nullable: false })
+	serviceImage!: string;
+
 	constructor(
 		serviceName: string,
 		serviceDuration: string,

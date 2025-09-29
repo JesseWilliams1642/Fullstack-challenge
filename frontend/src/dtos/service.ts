@@ -3,4 +3,5 @@ export class GetServiceDTO {
 	serviceName!: string;
 	serviceDuration!: string;
 	serviceDescription!: string;
+	serviceImage!: string;
 }

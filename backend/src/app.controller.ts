@@ -1,6 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { GetServiceDTO } from "./modules/service/dto";
+import { APIResponse } from "./common/types";
 
 @Controller("api")
 export class AppController {
@@ -9,7 +10,7 @@ export class AppController {
 	// Get all services to display on front page
 
 	@Get()
-	async getServices(): Promise<GetServiceDTO[]> {
-		return await this.appService.getService();
+	async getServices(): Promise<APIResponse<GetServiceDTO[]>> {
+		return { data: await this.appService.getService(), error: null };
 	}
 }

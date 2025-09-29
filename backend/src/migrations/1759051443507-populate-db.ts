@@ -35,25 +35,42 @@ export class PopulateDb1759051443507 implements MigrationInterface {
 
 		// Seed services
 		const services = [
-			{ serviceName: "Haircut", serviceDuration: "30m", serviceDescription: "" },
-			{ serviceName: "Hair Styling", serviceDuration: "45m", serviceDescription: "" },
+			{ 
+				serviceName: "Haircut", 
+				serviceDuration: "30m", 
+				serviceDescription: "Professional cuts for personal and business", 
+				serviceImage: "https://images.pexels.com/photos/3993456/pexels-photo-3993456.jpeg?auto=compress&cs=tinysrgb&w=800"
+			},
+			{ 
+				serviceName: "Hair Styling", 
+				serviceDuration: "45m", 
+				serviceDescription: "Professional styling for special occasions", 
+				serviceImage: "https://images.pexels.com/photos/3992865/pexels-photo-3992865.jpeg?auto=compress&cs=tinysrgb&w=800"
+			},
 			{
 				serviceName: "Hair Colouring",
 				serviceDuration: "90m",
-				serviceDescription: "",
+				serviceDescription: "Indepth consultation to determine what is best for your hair", 
+				serviceImage: "https://images.pexels.com/photos/3992855/pexels-photo-3992855.jpeg?auto=compress&cs=tinysrgb&w=800"
 			},
-			{ serviceName: "Consultation", serviceDuration: "15m", serviceDescription: "" },
+			{ 
+				serviceName: "Consultation", 
+				serviceDuration: "15m", 
+				serviceDescription: "Hair dying and natural-looking highlights with expert technique", 
+				serviceImage: "https://images.pexels.com/photos/3992871/pexels-photo-3992871.jpeg?auto=compress&cs=tinysrgb&w=800"
+			},
 			{
 				serviceName: "Deep Conditioning Treatment",
 				serviceDuration: "60m",
-				serviceDescription: "",
-			},
+				serviceDescription: "Deep conditioning and repair treatment", 
+				serviceImage: "https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=800"
+			}
 		];
 
 		for (const service of services) {
 			await queryRunner.query(
-				`INSERT INTO "services" ("service_name", "service_duration", "service_description") VALUES ($1, $2, $3)`,
-				[service.serviceName, service.serviceDuration, service.serviceDescription],
+				`INSERT INTO "services" ("service_name", "service_duration", "service_description", "service_image") VALUES ($1, $2, $3, $4)`,
+				[service.serviceName, service.serviceDuration, service.serviceDescription, service.serviceImage],
 			);
 		}
 

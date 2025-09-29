@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { IsNotEmpty, IsString, IsUrl, IsUUID } from "class-validator";
 
 export class GetServiceDTO {
 	@IsUUID()
@@ -16,4 +16,8 @@ export class GetServiceDTO {
 	@IsString()
 	@IsNotEmpty()
 	serviceDescription!: string;
+
+	@IsUrl()
+	@IsNotEmpty()
+	serviceImage!: string;
 }

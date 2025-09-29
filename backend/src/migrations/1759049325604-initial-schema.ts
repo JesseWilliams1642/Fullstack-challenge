@@ -8,7 +8,7 @@ export class InitialSchema1759049325604 implements MigrationInterface {
 			`CREATE TABLE "staff" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "days_working" boolean array NOT NULL, "start_time" interval NOT NULL, "shift_duration" interval NOT NULL, "break_time" interval NOT NULL, "break_duration" interval NOT NULL, "buffer_period" interval NOT NULL, CONSTRAINT "PK_e4ee98bb552756c180aec1e854a" PRIMARY KEY ("id"))`,
 		);
 		await queryRunner.query(
-			`CREATE TABLE "services" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "service_name" character varying NOT NULL, "service_duration" interval NOT NULL, "service_description" character varying NOT NULL, CONSTRAINT "PK_ba2d347a3168a296416c6c5ccb2" PRIMARY KEY ("id"))`,
+			`CREATE TABLE "services" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "service_name" character varying NOT NULL, "service_duration" interval NOT NULL, "service_description" character varying NOT NULL, "service_image" character varying NOT NULL, CONSTRAINT "PK_ba2d347a3168a296416c6c5ccb2" PRIMARY KEY ("id"))`,
 		);
 		await queryRunner.query(
 			`CREATE TABLE "appointments" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "start_timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "serviceId" uuid, "userId" uuid, "staffId" uuid, CONSTRAINT "PK_4a437a9a27e948726b8bb3e36ad" PRIMARY KEY ("id"))`,

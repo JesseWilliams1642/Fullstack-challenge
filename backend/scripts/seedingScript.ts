@@ -59,7 +59,8 @@ async function bootstrap() {
 		serviceRepository.create({
 			serviceName: "Haircut",
 			serviceDuration: "30m",
-			serviceDescription: "",
+			serviceDescription: "Professional cuts for personal and business",
+			serviceImage: "https://images.pexels.com/photos/3993456/pexels-photo-3993456.jpeg?auto=compress&cs=tinysrgb&w=800"
 		}),
 	);
 
@@ -67,7 +68,8 @@ async function bootstrap() {
 		serviceRepository.create({
 			serviceName: "Hair Styling",
 			serviceDuration: "45m",
-			serviceDescription: "",
+			serviceDescription: "Professional styling for special occasions",
+			serviceImage: "https://images.pexels.com/photos/3992865/pexels-photo-3992865.jpeg?auto=compress&cs=tinysrgb&w=800"
 		}),
 	);
 
@@ -75,7 +77,8 @@ async function bootstrap() {
 		serviceRepository.create({
 			serviceName: "Hair Colouring",
 			serviceDuration: "90m",
-			serviceDescription: "",
+			serviceDescription: "Indepth consultation to determine what is best for your hair",
+			serviceImage: "https://images.pexels.com/photos/3992855/pexels-photo-3992855.jpeg?auto=compress&cs=tinysrgb&w=800"
 		}),
 	);
 
@@ -83,7 +86,8 @@ async function bootstrap() {
 		serviceRepository.create({
 			serviceName: "Consultation",
 			serviceDuration: "15m",
-			serviceDescription: "",
+			serviceDescription: "Hair dying and natural-looking highlights with expert technique",
+			serviceImage: "https://images.pexels.com/photos/3992871/pexels-photo-3992871.jpeg?auto=compress&cs=tinysrgb&w=800"
 		}),
 	);
 
@@ -91,7 +95,8 @@ async function bootstrap() {
 		serviceRepository.create({
 			serviceName: "Deep Conditioning Treatment",
 			serviceDuration: "60m",
-			serviceDescription: "",
+			serviceDescription: "Deep conditioning and repair treatment",
+			serviceImage: "https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=800"
 		}),
 	);
 
