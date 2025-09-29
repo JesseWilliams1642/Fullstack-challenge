@@ -64,22 +64,19 @@ export class AuthService {
 	async createUser(
 		email: string,
 		password: string,
-		name: string,
-		phoneNumber: string,
+		name: string
 	): Promise<SafeUser> {
 		const newUser: User = this.userRepository.create({
 			email: email,
 			hashedPassword: await hashPassword(password),
-			name: name,
-			phoneNumber: phoneNumber,
+			name: name
 		});
 
 		const savedUser: User = await this.userRepository.save(newUser);
 		return {
 			id: savedUser.id,
 			name: savedUser.name,
-			email: savedUser.email,
-			phoneNumber: savedUser.phoneNumber,
+			email: savedUser.email
 		};
 	}
 }

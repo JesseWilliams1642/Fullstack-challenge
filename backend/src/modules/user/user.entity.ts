@@ -20,9 +20,6 @@ export class User {
 	@Column({ name: "email", type: "varchar", nullable: false })
 	email!: string;
 
-	@Column({ name: "phone_number", type: "varchar", nullable: false })
-	phoneNumber!: string;
-
 	@Column({ name: "hashed_password", type: "varchar", nullable: false })
 	hashedPassword!: string;
 
@@ -35,12 +32,10 @@ export class User {
 	constructor(
 		name: string,
 		email: string,
-		phoneNumber: string,
 		hashedPassword: string,
 	) {
 		this.name = name;
 		this.email = email;
-		this.phoneNumber = phoneNumber;
 		this.hashedPassword = hashedPassword;
 	}
 }

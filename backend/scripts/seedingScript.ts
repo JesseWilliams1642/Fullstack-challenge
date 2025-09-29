@@ -28,8 +28,7 @@ async function bootstrap() {
 		userRepository.create({
 			name: "Customer 1",
 			email: "customer1@sampleassist.com",
-			hashedPassword: await hashPassword("password@123"),
-			phoneNumber: "0123456789",
+			hashedPassword: await hashPassword("password@123")
 		}),
 	);
 
@@ -37,8 +36,7 @@ async function bootstrap() {
 		userRepository.create({
 			name: "Customer 2",
 			email: "customer2@sampleassist.com",
-			hashedPassword: await hashPassword("password@123"),
-			phoneNumber: "0123456789",
+			hashedPassword: await hashPassword("password@123")
 		}),
 	);
 
@@ -46,8 +44,7 @@ async function bootstrap() {
 		userRepository.create({
 			name: "Admin",
 			email: "admin@sampleassist.com",
-			hashedPassword: await hashPassword("admin@123"),
-			phoneNumber: "0280068111",
+			hashedPassword: await hashPassword("admin@123")
 		}),
 	);
 

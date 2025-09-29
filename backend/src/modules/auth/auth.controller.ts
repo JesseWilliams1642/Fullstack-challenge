@@ -51,8 +51,7 @@ export class AuthController {
 		const createdUser = await this.authService.createUser(
 			dto.email,
 			dto.password,
-			dto.name,
-			dto.phoneNumber,
+			dto.name
 		);
 		return createdUser;
 	}

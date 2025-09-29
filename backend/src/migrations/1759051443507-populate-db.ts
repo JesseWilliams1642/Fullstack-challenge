@@ -11,26 +11,23 @@ export class PopulateDb1759051443507 implements MigrationInterface {
 				name: "Customer 1",
 				email: "customer1@sampleassist.com",
 				hashedPassword: await hashPassword("password@123"),
-				phoneNumber: "0123456789",
 			},
 			{
 				name: "Customer 2",
 				email: "customer2@sampleassist.com",
 				hashedPassword: await hashPassword("password@123"),
-				phoneNumber: "0123456789",
 			},
 			{
 				name: "Admin",
 				email: "admin@sampleassist.com",
 				hashedPassword: await hashPassword("admin@123"),
-				phoneNumber: "0280068111",
 			},
 		];
 
 		for (const user of users) {
 			await queryRunner.query(
-				`INSERT INTO "users" ("name", "email", "hashed_password", "phone_number") VALUES ($1, $2, $3, $4)`,
-				[user.name, user.email, user.hashedPassword, user.phoneNumber],
+				`INSERT INTO "users" ("name", "email", "hashed_password") VALUES ($1, $2, $3)`,
+				[user.name, user.email, user.hashedPassword],
 			);
 		}
 
