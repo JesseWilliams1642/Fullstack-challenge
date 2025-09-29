@@ -66,6 +66,10 @@ export class AuthService {
 		password: string,
 		name: string
 	): Promise<SafeUser> {
+
+		const user: User | null = await this.userRepository.findOneBy({ email });
+		if (user) throw new BadRequestException("User is already registered.");
+
 		const newUser: User = this.userRepository.create({
 			email: email,
 			hashedPassword: await hashPassword(password),
