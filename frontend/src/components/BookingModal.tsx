@@ -86,7 +86,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
 			if (error) showError(error);
 			else setTimeSlots(slots ?? []);
-			console.log(slots);
 		} catch (error) {
 			showError(error);
 		}
@@ -109,21 +108,29 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 		setError("");
 
 		try {
+			const [combinedTime, suffix]: string[] = selectedTime.split(" ");
+			const [hours, minutes] = combinedTime.split(":");
+
+			const addedHours: number = suffix === "AM" ? 0 : 12;
+			const totalHours: number = Number(hours) + addedHours;
+
+			const startDateString: string =
+				selectedDate + "T" + totalHours.toString() + ":" + minutes + ":00Z";
+			const startDate = new Date(startDateString);
+
 			let result: APIResponse<SafeAppointment>;
 			if (appointment)
 				result = await editAppointment({
 					appointmentID: appointment.id,
 					serviceID: selectedService,
 					staffID: selectedStaff,
-					date: selectedDate,
-					time: selectedTime,
+					startDate,
 				});
 			else
 				result = await createAppointment({
 					serviceID: selectedService,
 					staffID: selectedStaff,
-					date: selectedDate,
-					time: selectedTime,
+					startDate,
 				});
 
 			if (result.error)
@@ -250,7 +257,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 										type="button"
 										disabled={false}
 										onClick={() => setSelectedTime(slot)}
-										className={`px-3 py-2 text-sm rounded-md border transition-colors bg-rose-600 text-white border-rose-600`}
+										className={
+											selectedTime === slot
+												? `px-3 py-2 text-sm rounded-md border transition-colors bg-rose-300 text-black border-rose-600`
+												: `px-3 py-2 text-sm rounded-md border transition-colors bg-rose-600 text-white border-rose-600`
+										}
 									>
 										{slot}
 									</button>

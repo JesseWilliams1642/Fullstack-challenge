@@ -56,7 +56,7 @@ export class UserController {
 			serviceDescription: appointment.service.serviceDescription,
 			staffID: appointment.staff.id,
 			staffName: appointment.staff.name,
-			status: (appointment.startTimestamp > new Date()) ? "scheduled" : "completed"
+			status: appointment.startTimestamp > new Date() ? "scheduled" : "completed",
 		};
 		return { data: safeAppointment, error: null };
 	}
@@ -66,7 +66,7 @@ export class UserController {
 	@HttpCode(HttpStatus.OK)
 	@Get("appointments")
 	async getAppointments(
-		@GetUser() user: SafeUser
+		@GetUser() user: SafeUser,
 	): Promise<APIResponse<SafeAppointment[]>> {
 		const appointments: Appointment[] = await this.userService.getAppointments(
 			user.email,
@@ -83,7 +83,7 @@ export class UserController {
 			serviceDescription: item.service.serviceDescription,
 			staffID: item.staff.id,
 			staffName: item.staff.name,
-			status: (item.startTimestamp > new Date()) ? "scheduled" : "completed"
+			status: item.startTimestamp > new Date() ? "scheduled" : "completed",
 		}));
 
 		return { data: safeAppointments, error: null };
@@ -111,7 +111,7 @@ export class UserController {
 			serviceDescription: item.service.serviceDescription,
 			staffID: item.staff.id,
 			staffName: item.staff.name,
-			status: (item.startTimestamp > new Date()) ? "scheduled" : "completed"
+			status: item.startTimestamp > new Date() ? "scheduled" : "completed",
 		}));
 		return { data: safeAppointments, error: null };
 	}
@@ -140,7 +140,7 @@ export class UserController {
 			serviceDescription: appointment.service.serviceDescription,
 			staffID: appointment.staff.id,
 			staffName: appointment.staff.name,
-			status: (appointment.startTimestamp > new Date()) ? "scheduled" : "completed"
+			status: appointment.startTimestamp > new Date() ? "scheduled" : "completed",
 		};
 		return { data: safeAppointment, error: null };
 	}
@@ -148,7 +148,7 @@ export class UserController {
 	// Delete an appointment
 
 	@HttpCode(HttpStatus.OK)
-	@Delete("appointments")
+	@Delete("appointments/:id")
 	async deleteAppointment(
 		@GetUser() user: SafeUser,
 		@Param("id", ParseIntPipe) dto: DeleteAppointmentDTO,

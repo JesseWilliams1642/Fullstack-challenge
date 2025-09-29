@@ -36,7 +36,8 @@ export const editAppointment = async (
 export const deleteAppointment = async (
 	id: string,
 ): Promise<APIResponse<string>> => {
-	return axiosInstance.delete(`/api/user/appointments/:${id}`, {
+	return axiosInstance.delete(`/api/user/appointments`, {
 		withCredentials: true,
+		params: { id },
 	});
 };
