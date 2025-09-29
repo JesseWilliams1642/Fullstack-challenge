@@ -1,10 +1,12 @@
 import {
 	Body,
 	Controller,
+	Get,
 	HttpCode,
 	HttpStatus,
 	Post,
 	Res,
+	UseGuards,
 } from "@nestjs/common";
 import type { Response } from "express";
 
@@ -13,7 +15,9 @@ import { AuthDTO } from "./dto";
 import { JwtToken } from "./types";
 import { cookieConfig } from "../../common/config";
 import { RegisterDTO } from "./dto/register.dto";
-import { type APIResponse, SafeUser } from "../../common/types";
+import { type APIResponse, type SafeUser } from "../../common/types";
+import { JwtGuard } from "../../common/guards";
+import { GetUser } from "../../common/decorators";
 
 @Controller("api/auth")
 export class AuthController {
@@ -55,4 +59,21 @@ export class AuthController {
 		);
 		return { data: createdUser, error: null };
 	}
+
+	// Me API required for authentication
+
+	@UseGuards(JwtGuard)
+	@HttpCode(HttpStatus.OK)
+	@Get("me")
+	async getUser(
+		@GetUser() user: SafeUser
+	): Promise<APIResponse<SafeUser>> {
+		const safeUser: SafeUser = {
+			email: user.email,
+			id: user.id,
+			name: user.name
+		};
+		return { data: safeUser, error: null };
+	}
+
 }

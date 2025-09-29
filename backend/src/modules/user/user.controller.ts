@@ -61,7 +61,9 @@ export class UserController {
 
 	@HttpCode(HttpStatus.OK)
 	@Get("appointments")
-	async getAppointments(@GetUser() user: SafeUser): Promise<APIResponse<SafeAppointment[]>> {
+	async getAppointments(
+		@GetUser() user: SafeUser
+	): Promise<APIResponse<SafeAppointment[]>> {
 		const appointments: Appointment[] = await this.userService.getAppointments(
 			user.email,
 		);
@@ -109,11 +111,11 @@ export class UserController {
 	@HttpCode(HttpStatus.OK)
 	@Patch("appointments")
 	async editAppointment(
-		@GetUser() _user: SafeUser,
+		@GetUser() user: SafeUser,
 		@Body() dto: EditAppointmentDTO,
 	): Promise<APIResponse<SafeAppointment>> {
 		const appointment: Appointment = await this.userService.editAppointment(
-			_user.email,
+			user.email,
 			dto,
 		);
 

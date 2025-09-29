@@ -3,7 +3,7 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import type { AuthenticatedUser } from "../types/user";
+import type { AuthenticatedUser } from "../types/authenticatedUser";
 
 export interface AuthContextType {
 	user: AuthenticatedUser | null;
