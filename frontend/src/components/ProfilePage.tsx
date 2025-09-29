@@ -27,16 +27,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 
 	useEffect(() => {
 		if (user) loadAppointments();
+		else onNavigate("login");
 	}, [user]);
 
 	const loadAppointments = async () => {
 		if (!user) return;
 
 		setLoading(true);
-		const { data, error } = await getAppointments();
 
-		if (error) showError(error);
-		else setAppointments(data || []);
+		try {
+			const { data, error } = await getAppointments();
+
+			if (error) showError(error);
+			else setAppointments(data || []);
+		} catch (error) {
+			showError(error);
+		}
 
 		setLoading(false);
 	};
@@ -44,10 +50,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 	const handleDeleteAppointment = async (appointmentId: string) => {
 		if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
-		const { data: _, error } = await deleteAppointment(appointmentId);
+		try {
+			const { data: _, error } = await deleteAppointment(appointmentId);
 
-		if (error) showError(error);
-		else loadAppointments();
+			if (error) showError(error);
+			else loadAppointments();
+		} catch (error) {
+			showError(error);
+		}
 	};
 
 	const handleEditAppointment = (appointment: SafeAppointment) => {
@@ -61,11 +71,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 		loadAppointments();
 	};
 
-	if (!user) {
-		onNavigate("login");
-		return null;
-	}
-
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 py-8">
 			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,7 +83,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 							</div>
 							<div>
 								<h1 className="text-2xl font-bold text-gray-900">
-									Welcome back, {user.name || user.email}!
+									Welcome back, {user?.name || user?.email}!
 								</h1>
 								<p className="text-gray-600">Manage your appointments and bookings</p>
 							</div>

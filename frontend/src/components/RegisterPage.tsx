@@ -4,7 +4,7 @@ import { register } from "../api/authAPI";
 import { showError } from "../lib/showError";
 
 interface RegisterPageProps {
-	onNavigate: (page: string) => void;
+	onNavigate: (page: string, registerSuccess: boolean) => void;
 }
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
@@ -33,16 +33,24 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 		setLoading(true);
 		setError("");
 
-		const { data: _, error: serverError } = await register({
-			email,
-			password,
-			name,
-		});
+		try {
+			const { data: _, error: serverError } = await register({
+				email,
+				password,
+				name,
+			});
 
-		if (serverError) {
-			if (typeof serverError.message === "string") setError(serverError.message);
-			else showError(serverError);
-		} else onNavigate("login");
+			if (serverError) {
+				if (typeof serverError.message === "string") setError(serverError.message);
+				else showError(serverError);
+			} else onNavigate("login", true);
+		} catch (error: any) {
+			if (error?.response?.data?.error?.message?.message)
+				setError(error.response.data.error.message.message);
+			else if (error?.response?.data?.error?.message)
+				setError(error.response.data.error.message);
+			else showError(error);
+		}
 
 		setLoading(false);
 	};
@@ -187,7 +195,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 								Already have an account?{" "}
 								<button
 									type="button"
-									onClick={() => onNavigate("login")}
+									onClick={() => onNavigate("login", false)}
 									className="text-rose-600 hover:text-rose-700 font-medium"
 								>
 									Sign in here

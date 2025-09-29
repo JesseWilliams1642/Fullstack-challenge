@@ -5,14 +5,24 @@ import { showError } from "../lib/showError";
 
 interface LoginPageProps {
 	onNavigate: (page: string) => void;
+	registerSuccess: boolean;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({
+	onNavigate,
+	registerSuccess,
+}) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
+	const [justRegistered, setRegistered] = useState(registerSuccess);
+	const [loginSuccess, setLoginSuccess] = useState(false);
+
+	React.useEffect(() => {
+		if (loginSuccess) onNavigate("profile");
+	}, [loginSuccess]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -20,13 +30,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
 		setLoading(true);
 		setError("");
+		setRegistered(false);
 
-		const { data: _, error } = await login({ email, password });
+		try {
+			const { data: _, error } = await login({ email, password });
 
-		if (error)
-			if (typeof error.message === "string") setError(error.message);
+			if (error)
+				if (typeof error.message === "string") setError(error.message);
+				else showError(error);
+			else setLoginSuccess(true);
+		} catch (error: any) {
+			if (error?.response?.data?.error?.message?.message)
+				setError(error.response.data.error.message.message);
+			else if (error?.response?.data?.error?.message)
+				setError(error.response.data.error.message);
 			else showError(error);
-		else onNavigate("profile");
+		}
 
 		setLoading(false);
 	};
@@ -133,6 +152,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 							</p>
 						</div>
 					</form>
+				</div>
+
+				<div className="text-green-600 font-medium text-sm text-center">
+					{justRegistered ? "Account registered successfully" : ""}
 				</div>
 			</div>
 		</div>

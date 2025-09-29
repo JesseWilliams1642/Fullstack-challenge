@@ -29,7 +29,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 			<section className="py-20 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-7xl mx-auto text-center">
 					<h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
-						Transform Your Look at
+						Transform Your Look At
 						<span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-purple-600 block">
 							Salon Elite
 						</span>

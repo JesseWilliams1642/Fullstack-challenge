@@ -35,7 +35,7 @@ export class AuthService {
 			password,
 			user.hashedPassword,
 		);
-		if (!equalPasswords) throw new BadRequestException("Password mismatch.");
+		if (!equalPasswords) throw new BadRequestException("Incorrect password.");
 
 		return await this.signToken(user.id, user.email);
 	}
@@ -64,23 +64,22 @@ export class AuthService {
 	async createUser(
 		email: string,
 		password: string,
-		name: string
+		name: string,
 	): Promise<SafeUser> {
-
 		const user: User | null = await this.userRepository.findOneBy({ email });
 		if (user) throw new BadRequestException("User is already registered.");
 
 		const newUser: User = this.userRepository.create({
 			email: email,
 			hashedPassword: await hashPassword(password),
-			name: name
+			name: name,
 		});
 
 		const savedUser: User = await this.userRepository.save(newUser);
 		return {
 			id: savedUser.id,
 			name: savedUser.name,
-			email: savedUser.email
+			email: savedUser.email,
 		};
 	}
 }

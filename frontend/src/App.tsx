@@ -10,9 +10,11 @@ type Page = "home" | "login" | "register" | "profile";
 
 function App() {
 	const [currentPage, setCurrentPage] = useState<Page>("home");
+	const [params, setParams] = useState<unknown>();
 
-	const handleNavigate = (page: string) => {
+	const handleNavigate = (page: string, params?: any) => {
 		setCurrentPage(page as Page);
+		setParams(params || null);
 	};
 
 	const renderPage = () => {
@@ -20,7 +22,12 @@ function App() {
 			case "home":
 				return <HomePage onNavigate={handleNavigate} />;
 			case "login":
-				return <LoginPage onNavigate={handleNavigate} />;
+				return (
+					<LoginPage
+						onNavigate={handleNavigate}
+						registerSuccess={typeof params === "boolean" ? params : false}
+					/>
+				);
 			case "register":
 				return <RegisterPage onNavigate={handleNavigate} />;
 			case "profile":

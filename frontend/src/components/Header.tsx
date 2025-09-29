@@ -2,6 +2,7 @@ import React from "react";
 import { Scissors, User, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { logout } from "../api/authAPI";
+import { showError } from "../lib/showError";
 
 interface HeaderProps {
 	onNavigate: (page: string) => void;
@@ -9,11 +10,16 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
-	const { user, userLoaded: _ } = useAuth(); 
+	const { user, userLoaded: _, setUser } = useAuth();
 
 	const handleSignOut = async () => {
-		await logout();
-		onNavigate("home");
+		try {
+			await logout();
+			setUser(null);
+			onNavigate("home");
+		} catch (error) {
+			showError(error);
+		}
 	};
 
 	return (

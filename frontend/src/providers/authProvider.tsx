@@ -24,13 +24,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			try {
 				const res = await axios.get("/api/auth/me", { withCredentials: true });
 
-				const fetchedUser = res.data?.user;
+				const fetchedUser = res.data;
 
-				if (fetchedUser && typeof fetchedUser.role === "string") {
-					setUser(fetchedUser);
-				} else {
-					setUser(null);
-				}
+				if (fetchedUser) setUser(fetchedUser);
+				else setUser(null);
 			} catch (err) {
 				console.error("AuthProvider error:", err);
 				setUser(null);

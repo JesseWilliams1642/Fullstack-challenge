@@ -53,29 +53,41 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	}, [selectedDate, selectedStaff]);
 
 	const loadServices = async () => {
-		const { data, error } = await getServices();
+		try {
+			const { data, error } = await getServices();
 
-		if (error) console.error("Error loading services:", error);
-		else setServices(data || []);
+			if (error) showError(error);
+			else setServices(data || []);
+		} catch (error) {
+			showError(error);
+		}
 	};
 
 	const loadStaff = async () => {
-		const { data, error } = await getStaff();
+		try {
+			const { data, error } = await getStaff();
 
-		if (error) showError(error);
-		else setStaff(data || []);
+			if (error) showError(error);
+			else setStaff(data || []);
+		} catch (error) {
+			showError(error);
+		}
 	};
 
 	const generateTimeSlots = async () => {
-		const { data: slots, error } = await getAppointmentAvailability({
-			serviceID: selectedService,
-			date: selectedDate,
-			time: selectedTime,
-			staffID: selectedStaff,
-		});
+		try {
+			const { data: slots, error } = await getAppointmentAvailability({
+				serviceID: selectedService,
+				date: selectedDate,
+				time: selectedTime,
+				staffID: selectedStaff,
+			});
 
-		if (error) showError(error);
-		else setTimeSlots(slots ?? []);
+			if (error) showError(error);
+			else setTimeSlots(slots ?? []);
+		} catch (error) {
+			showError(error);
+		}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -94,27 +106,31 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 		setLoading(true);
 		setError("");
 
-		let result: APIResponse<SafeAppointment>;
-		if (appointment)
-			result = await editAppointment({
-				appointmentID: appointment.id,
-				serviceID: selectedService,
-				staffID: selectedStaff,
-				date: selectedDate,
-				time: selectedTime,
-			});
-		else
-			result = await createAppointment({
-				serviceID: selectedService,
-				staffID: selectedStaff,
-				date: selectedDate,
-				time: selectedTime,
-			});
+		try {
+			let result: APIResponse<SafeAppointment>;
+			if (appointment)
+				result = await editAppointment({
+					appointmentID: appointment.id,
+					serviceID: selectedService,
+					staffID: selectedStaff,
+					date: selectedDate,
+					time: selectedTime,
+				});
+			else
+				result = await createAppointment({
+					serviceID: selectedService,
+					staffID: selectedStaff,
+					date: selectedDate,
+					time: selectedTime,
+				});
 
-		if (result.error)
-			if (typeof result.error.message === "string") setError(result.error.message);
-			else showError(result.error);
-		else onSuccess();
+			if (result.error)
+				if (typeof result.error.message === "string") setError(result.error.message);
+				else showError(result.error);
+			else onSuccess();
+		} catch (error) {
+			showError(error);
+		}
 
 		setLoading(false);
 	};
