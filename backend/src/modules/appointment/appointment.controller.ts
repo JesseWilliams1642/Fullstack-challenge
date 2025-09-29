@@ -23,7 +23,7 @@ export class AppointmentController {
 	@Get("availability")
 	async getAppointments(
 		@Query() dto: GetAppointmentAvailabilityDTO,
-	): Promise<APIResponse<Date[]>> {
+	): Promise<APIResponse<string[]>> {
 		return {
 			data: await this.appointmentService.getAvailabilities(
 						dto.serviceID,

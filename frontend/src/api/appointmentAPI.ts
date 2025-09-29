@@ -4,7 +4,7 @@ import type { APIResponse } from "../types/apiResponse";
 
 export const getAppointmentAvailability = async (
 	dto: GetAppointmentAvailabilityDTO,
-): Promise<APIResponse<Date[]>> => {
+): Promise<APIResponse<string[]>> => {
 	return axiosInstance.get(
 		`/api/appointment?serviceID=${dto.serviceID}&date=${dto.date}&staffID=${dto.staffID}`,
 		{ withCredentials: true },

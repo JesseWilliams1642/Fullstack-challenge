@@ -9,5 +9,5 @@ export interface SafeAppointment {
 	serviceDescription: string;
 	staffID: string;
 	staffName: string;
-	status: string;
+	status: "scheduled" | "completed";
 }

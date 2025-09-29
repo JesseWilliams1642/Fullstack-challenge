@@ -23,6 +23,7 @@ import {
 	DeleteAppointmentDTO,
 } from "./dto";
 import { SafeAppointment } from "../appointment/types";
+import { dateToStrings } from "src/common/utils";
 
 @UseGuards(JwtGuard)
 @Controller("api/user")
@@ -47,12 +48,15 @@ export class UserController {
 		const safeAppointment: SafeAppointment = {
 			id: appointment.id,
 			startTimestamp: appointment.startTimestamp,
+			dateString: dateToStrings(appointment.startTimestamp)[0],
+			timeString: dateToStrings(appointment.startTimestamp)[1],
 			serviceID: appointment.service.id,
 			serviceName: appointment.service.serviceName,
 			serviceDuration: appointment.service.serviceDuration,
 			serviceDescription: appointment.service.serviceDescription,
 			staffID: appointment.staff.id,
 			staffName: appointment.staff.name,
+			status: (appointment.startTimestamp > new Date()) ? "scheduled" : "completed"
 		};
 		return { data: safeAppointment, error: null };
 	}
@@ -71,12 +75,15 @@ export class UserController {
 		const safeAppointments: SafeAppointment[] = appointments.map((item) => ({
 			id: item.id,
 			startTimestamp: item.startTimestamp,
+			dateString: dateToStrings(item.startTimestamp)[0],
+			timeString: dateToStrings(item.startTimestamp)[1],
 			serviceID: item.service.id,
 			serviceName: item.service.serviceName,
 			serviceDuration: item.service.serviceDuration,
 			serviceDescription: item.service.serviceDescription,
 			staffID: item.staff.id,
 			staffName: item.staff.name,
+			status: (item.startTimestamp > new Date()) ? "scheduled" : "completed"
 		}));
 
 		return { data: safeAppointments, error: null };
@@ -96,12 +103,15 @@ export class UserController {
 		const safeAppointments: SafeAppointment[] = appointments.map((item) => ({
 			id: item.id,
 			startTimestamp: item.startTimestamp,
+			dateString: dateToStrings(item.startTimestamp)[0],
+			timeString: dateToStrings(item.startTimestamp)[1],
 			serviceID: item.service.id,
 			serviceName: item.service.serviceName,
 			serviceDuration: item.service.serviceDuration,
 			serviceDescription: item.service.serviceDescription,
 			staffID: item.staff.id,
 			staffName: item.staff.name,
+			status: (item.startTimestamp > new Date()) ? "scheduled" : "completed"
 		}));
 		return { data: safeAppointments, error: null };
 	}
@@ -122,12 +132,15 @@ export class UserController {
 		const safeAppointment: SafeAppointment = {
 			id: appointment.id,
 			startTimestamp: appointment.startTimestamp,
+			dateString: dateToStrings(appointment.startTimestamp)[0],
+			timeString: dateToStrings(appointment.startTimestamp)[1],
 			serviceID: appointment.service.id,
 			serviceName: appointment.service.serviceName,
 			serviceDuration: appointment.service.serviceDuration,
 			serviceDescription: appointment.service.serviceDescription,
 			staffID: appointment.staff.id,
 			staffName: appointment.staff.name,
+			status: (appointment.startTimestamp > new Date()) ? "scheduled" : "completed"
 		};
 		return { data: safeAppointment, error: null };
 	}

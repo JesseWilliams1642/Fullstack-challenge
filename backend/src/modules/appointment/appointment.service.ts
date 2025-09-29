@@ -4,7 +4,7 @@ import { Between, Repository } from "typeorm";
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
 import { Appointment } from "./appointment.entity";
-import { durationToMilliseconds } from "../../common/utils";
+import { dateToStrings, durationToMilliseconds } from "../../common/utils";
 import { User } from "../user/user.entity";
 
 @Injectable()
@@ -23,7 +23,7 @@ export class AppointmentService {
 		serviceID: string,
 		day: Date,
 		staffID: string,
-	): Promise<Date[]> {
+	): Promise<string[]> {
 		// Get required data
 		const service: Service | null = await this.serviceRepository.findOneBy({
 			id: serviceID,
@@ -124,7 +124,12 @@ export class AppointmentService {
 			possibleValues.push(new Date(startTime));
 		}
 
-		return possibleValues;
+		// Return a frontend-readable date string (e.g. 02/11/2000) and time (e.g. 2:30 pm)
+		const timestamps: string[] = [];
+		for (let date of possibleValues)
+			timestamps.push(dateToStrings(date)[1]);
+
+		return timestamps;
 	}
 
 	async checkAppointmentAvailability(

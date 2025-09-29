@@ -75,22 +75,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			staffID: selectedStaff
 		});
 
-		const tempTimeSlots: string[] = [];
-		if (slots)
-			for (let time of slots) {
-
-				let hour: number = time.getHours();
-				const minute: number = time.getMinutes();
-				const suffix: string = hour >= 12 ? "PM" : "AM";
-				hour = hour % 12;			// So 14 --> 2
-				hour = hour ? hour : 12;	// Changes 0 --> 12
-
-				const minuteFormatted: string = String(minute).padStart(2,'0');	
-				tempTimeSlots.push(`${hour}:${minuteFormatted} ${suffix}`);
-
-			}
-
-		setTimeSlots(tempTimeSlots);
+		setTimeSlots(slots ?? []);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
