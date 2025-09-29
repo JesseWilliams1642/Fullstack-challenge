@@ -23,7 +23,7 @@ import {
 	DeleteAppointmentDTO,
 } from "./dto";
 import { SafeAppointment } from "../appointment/types";
-import { dateToStrings } from "src/common/utils";
+import { dateToStrings } from "../../common/utils";
 
 @UseGuards(JwtGuard)
 @Controller("api/user")
