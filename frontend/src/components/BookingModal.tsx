@@ -9,6 +9,7 @@ import { getAppointmentAvailability } from "../api/appointmentAPI";
 import type { SafeAppointment } from "../types/safeAppointment";
 import type { APIResponse } from "../types/apiResponse";
 import { createAppointment, editAppointment } from "../api/userAPI";
+import { showError } from "../lib/showError";
 
 interface BookingModalProps {
 	appointment?: SafeAppointment | null;
@@ -56,26 +57,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
 		if (error) console.error("Error loading services:", error);
 		else setServices(data || []);
-
 	};
 
 	const loadStaff = async () => {
 		const { data, error } = await getStaff();
 
-		if (error) console.error("Error loading staff:", error);
+		if (error) showError(error);
 		else setStaff(data || []);
-		
 	};
 
 	const generateTimeSlots = async () => {
-		const { data: slots, error: _ } = await getAppointmentAvailability({
-			serviceID: selectedService, 
-			date: selectedDate, 
-			time: selectedTime, 
-			staffID: selectedStaff
+		const { data: slots, error } = await getAppointmentAvailability({
+			serviceID: selectedService,
+			date: selectedDate,
+			time: selectedTime,
+			staffID: selectedStaff,
 		});
 
-		setTimeSlots(slots ?? []);
+		if (error) showError(error);
+		else setTimeSlots(slots ?? []);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -95,21 +95,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 		setError("");
 
 		let result: APIResponse<SafeAppointment>;
-		if (appointment) result = await editAppointment({
-			appointmentID: appointment.id,
-			serviceID: selectedService,
-			staffID: selectedStaff,
-			date: selectedDate,
-			time: selectedTime
-		});
-		else result = await createAppointment({
-			serviceID: selectedService,
-			staffID: selectedStaff,
-			date: selectedDate,
-			time: selectedTime
-		});
+		if (appointment)
+			result = await editAppointment({
+				appointmentID: appointment.id,
+				serviceID: selectedService,
+				staffID: selectedStaff,
+				date: selectedDate,
+				time: selectedTime,
+			});
+		else
+			result = await createAppointment({
+				serviceID: selectedService,
+				staffID: selectedStaff,
+				date: selectedDate,
+				time: selectedTime,
+			});
 
-		if (result.error) setError(result.error.message);
+		if (result.error)
+			if (typeof result.error.message === "string") setError(result.error.message);
+			else showError(result.error);
 		else onSuccess();
 
 		setLoading(false);

@@ -11,6 +11,7 @@ import { type SafeAppointment } from "../types/safeAppointment";
 import { BookingModal } from "./BookingModal";
 import { useAuth } from "../hooks/useAuth";
 import { deleteAppointment, getAppointments } from "../api/userAPI";
+import { showError } from "../lib/showError";
 
 interface ProfilePageProps {
 	onNavigate: (page: string) => void;
@@ -34,20 +35,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 		setLoading(true);
 		const { data, error } = await getAppointments();
 
-		if (error) console.error("Error loading appointments:", error);
+		if (error) showError(error);
 		else setAppointments(data || []);
-		
+
 		setLoading(false);
 	};
 
 	const handleDeleteAppointment = async (appointmentId: string) => {
 		if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
-		const { data: _ , error } = await deleteAppointment(appointmentId);
+		const { data: _, error } = await deleteAppointment(appointmentId);
 
-		if (error) console.error("Error deleting appointment:", error);
+		if (error) showError(error);
 		else loadAppointments();
-		
 	};
 
 	const handleEditAppointment = (appointment: SafeAppointment) => {
@@ -152,7 +152,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 											<p className="text-gray-600 mt-2">
 												<strong>Stylist:</strong> {appointment.staffName}
 											</p>
-
 										</div>
 
 										<div className="flex space-x-2 ml-4">

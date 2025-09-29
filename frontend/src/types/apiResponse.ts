@@ -1,4 +1,6 @@
+import type { ErrorMessage } from "./errorMessage";
+
 export interface APIResponse<T> {
 	data: T | null;
-	error: Error | null;
+	error: ErrorMessage | null;
 }

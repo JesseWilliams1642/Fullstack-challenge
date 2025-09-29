@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Scissors, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { login } from "../api/authAPI";
+import { showError } from "../lib/showError";
 
 interface LoginPageProps {
 	onNavigate: (page: string) => void;
@@ -20,9 +21,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 		setLoading(true);
 		setError("");
 
-		const { data: _ , error } = await login({ email, password }); 
+		const { data: _, error } = await login({ email, password });
 
-		if (error) setError(error.message);
+		if (error)
+			if (typeof error.message === "string") setError(error.message);
+			else showError(error);
 		else onNavigate("profile");
 
 		setLoading(false);

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Scissors, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { register } from "../api/authAPI";
+import { showError } from "../lib/showError";
 
 interface RegisterPageProps {
 	onNavigate: (page: string) => void;
@@ -24,21 +25,24 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 			return;
 		}
 
-		if (password.length < 6) {
-			setError("Password must be at least 6 characters long");
+		if (password.length < 8) {
+			setError("Password must be at least 8 characters long");
 			return;
 		}
 
 		setLoading(true);
 		setError("");
 
-		const { data: _, error } = await register({ email, password, name });
+		const { data: _, error: serverError } = await register({
+			email,
+			password,
+			name,
+		});
 
-		if (error) {
-			setError(error.message);
-		} else {
-			onNavigate("profile");
-		}
+		if (serverError) {
+			if (typeof serverError.message === "string") setError(serverError.message);
+			else showError(serverError);
+		} else onNavigate("login");
 
 		setLoading(false);
 	};
