@@ -13,7 +13,7 @@ if (isNaN(port))
 
 const dataSource = new DataSource({
 	type: "postgres",
-	host: process.env.DB_HOST || "localhost",
+	host: "db",			// Must match service name in docker-compose.yml
 	port: port,
 	username: process.env.DB_USERNAME || "postgres",
 	password: process.env.DB_PASSWORD || "password",
