@@ -10,6 +10,7 @@ import type { SafeAppointment } from "../types/safeAppointment";
 import type { APIResponse } from "../types/apiResponse";
 import { createAppointment, editAppointment } from "../api/userAPI";
 import { showError } from "../lib/showError";
+import { durationToMinutes } from "../lib/date-to-minutes";
 
 interface BookingModalProps {
 	appointment?: SafeAppointment | null;
@@ -47,10 +48,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	}, []);
 
 	useEffect(() => {
-		if (selectedDate && selectedStaff) {
+		if (selectedDate && selectedStaff && selectedService) {
 			generateTimeSlots();
 		}
-	}, [selectedDate, selectedStaff]);
+	}, [selectedDate, selectedStaff, selectedService]);
 
 	const loadServices = async () => {
 		try {
@@ -85,6 +86,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
 			if (error) showError(error);
 			else setTimeSlots(slots ?? []);
+			console.log(slots);
 		} catch (error) {
 			showError(error);
 		}
@@ -128,8 +130,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 				if (typeof result.error.message === "string") setError(result.error.message);
 				else showError(result.error);
 			else onSuccess();
-		} catch (error) {
-			showError(error);
+		} catch (error: any) {
+			if (error?.response?.data?.error?.message?.message)
+				setError(error.response.data.error.message.message);
+			else if (error?.response?.data?.error?.message)
+				setError(error.response.data.error.message);
+			else showError(error);
 		}
 
 		setLoading(false);
@@ -184,7 +190,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 									key={service.id}
 									value={service.id}
 								>
-									{service.serviceName} - ({service.serviceDuration} min)
+									{service.serviceName} - ({durationToMinutes(service.serviceDuration)} min)
 								</option>
 							))}
 						</select>

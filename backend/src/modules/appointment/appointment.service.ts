@@ -89,45 +89,47 @@ export class AppointmentService {
 
 			const endTime: number = startTime + duration;
 
-			// Get current appointment information
-			const appointmentStart: number =
-				staffAppointments[staffAppointmentIndex].startTimestamp.getTime();
-			const appointmentEnd: number =
-				appointmentStart +
-				durationToMilliseconds(
-					staffAppointments[staffAppointmentIndex].service.serviceDuration,
-				);
+			// Checks for if there are any staff appointments for this day
+			if (staffAppointmentSize > 0) {
+				// Get current appointment information
+				const appointmentStart: number =
+					staffAppointments[staffAppointmentIndex].startTimestamp.getTime();
+				const appointmentEnd: number =
+					appointmentStart +
+					durationToMilliseconds(
+						staffAppointments[staffAppointmentIndex].service.serviceDuration,
+					);
 
-			// Check if the start or end time is inside an appointment (or its buffer bounds)
-			if (
-				startTime >= appointmentStart - staffBuffer &&
-				startTime < appointmentEnd + staffBuffer
-			)
-				continue;
-			if (
-				endTime > appointmentStart - staffBuffer &&
-				endTime <= appointmentEnd + staffBuffer
-			)
-				continue;
+				// Check if the start or end time is inside an appointment (or its buffer bounds)
+				if (
+					startTime >= appointmentStart - staffBuffer &&
+					startTime < appointmentEnd + staffBuffer
+				)
+					continue;
+				if (
+					endTime > appointmentStart - staffBuffer &&
+					endTime <= appointmentEnd + staffBuffer
+				)
+					continue;
+
+				// Goto next appointment for check if we have moved past it
+				if (
+					startTime >= appointmentEnd + staffBuffer &&
+					staffAppointmentIndex + 1 < staffAppointmentSize
+				)
+					staffAppointmentIndex = staffAppointmentIndex + 1;
+			}
 
 			// Check for the break period
 			if (startTime >= staffBreakStart && startTime < staffBreakEnd) continue;
 			if (endTime > staffBreakStart && endTime <= staffBreakEnd) continue;
-
-			// Goto next appointment for check if we have moved past it
-			if (
-				startTime >= appointmentEnd + staffBuffer &&
-				staffAppointmentIndex + 1 < staffAppointmentSize
-			)
-				staffAppointmentIndex = staffAppointmentIndex + 1;
 
 			possibleValues.push(new Date(startTime));
 		}
 
 		// Return a frontend-readable date string (e.g. 02/11/2000) and time (e.g. 2:30 pm)
 		const timestamps: string[] = [];
-		for (let date of possibleValues)
-			timestamps.push(dateToStrings(date)[1]);
+		for (let date of possibleValues) timestamps.push(dateToStrings(date)[1]);
 
 		return timestamps;
 	}
