@@ -10,6 +10,8 @@ import {
 	HttpCode,
 	Patch,
 	Delete,
+	Req,
+	BadRequestException,
 } from "@nestjs/common";
 
 import { UserService } from "./user.service";
@@ -19,11 +21,11 @@ import { JwtGuard } from "../../common/guards";
 import { GetUser } from "../../common/decorators";
 import {
 	CreateAppointmentDTO,
-	EditAppointmentDTO,
-	DeleteAppointmentDTO,
+	EditAppointmentDTO
 } from "./dto";
 import { SafeAppointment } from "../appointment/types";
 import { dateToStrings } from "../../common/utils";
+import { type Request } from "express";
 
 @UseGuards(JwtGuard)
 @Controller("api/user")
@@ -148,12 +150,15 @@ export class UserController {
 	// Delete an appointment
 
 	@HttpCode(HttpStatus.OK)
-	@Delete("appointments/:id")
+	@Delete("appointments")
 	async deleteAppointment(
 		@GetUser() user: SafeUser,
-		@Param("id", ParseIntPipe) dto: DeleteAppointmentDTO,
+		@Req() req: Request,
 	): Promise<APIResponse<string>> {
-		await this.userService.deleteAppointment(user.email, dto.appointmentID);
+		const id: string | undefined = req.body.id;
+		if (!id) throw new BadRequestException("Appointment ID is empty.");
+
+		await this.userService.deleteAppointment(user.email, id);
 		return { data: "Appointment deleted successfully.", error: null };
 	}
 }

@@ -38,6 +38,6 @@ export const deleteAppointment = async (
 ): Promise<APIResponse<string>> => {
 	return axiosInstance.delete(`/api/user/appointments`, {
 		withCredentials: true,
-		params: { id },
+		data: { id },
 	});
 };
