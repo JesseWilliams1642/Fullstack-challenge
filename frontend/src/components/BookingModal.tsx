@@ -32,15 +32,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	const [selectedStaff, setSelectedStaff] = useState<string>(
 		appointment?.staffID || "",
 	);
-	const [selectedDate, setSelectedDate] = useState<string>(
-		appointment?.dateString || "",
-	);
-	const [selectedTime, setSelectedTime] = useState<string>(
-		appointment?.timeString || "",
-	);
+	const [selectedDate, setSelectedDate] = useState<string>("");
+	const [selectedTime, setSelectedTime] = useState<string>("");
+
 	const [timeSlots, setTimeSlots] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
+	const [checkEdit, setCheckEdit] = useState(true);
 
 	useEffect(() => {
 		loadServices();
@@ -52,6 +50,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			generateTimeSlots();
 		}
 	}, [selectedDate, selectedStaff, selectedService]);
+
+	// For getting the correct date and time values
+	useEffect(() => {
+		if (appointment && checkEdit) {
+			setCheckEdit(false);	
+			setSelectedTime(appointment.timeString);
+			setSelectedDate(appointment.dateString.replace("/","-"));
+			console.log("Edit Appointment appointment:")
+			console.log(appointment);
+		}
+	});
 
 	const loadServices = async () => {
 		try {
@@ -85,7 +94,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			});
 
 			if (error) showError(error);
-			else setTimeSlots(slots ?? []);
+			else {
+				setTimeSlots(slots ?? []);
+				if (slots) setError("");
+				else setError("No available appointments for these selections.");
+			}
 		} catch (error) {
 			showError(error);
 		}
@@ -103,7 +116,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			setError("Please fill in all required fields");
 			return;
 		}
-
 		setLoading(true);
 		setError("");
 
@@ -112,11 +124,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			const [hours, minutes] = combinedTime.split(":");
 
 			const addedHours: number = suffix === "AM" ? 0 : 12;
-			const totalHours: number = Number(hours) + addedHours;
+			let totalHours: number = Number(hours) + addedHours;
+			const stringHours: string = (totalHours < 10) ? "0" + totalHours.toString() : totalHours.toString();
 
 			const startDateString: string =
-				selectedDate + "T" + totalHours.toString() + ":" + minutes + ":00Z";
-			const startDate = new Date(startDateString);
+				selectedDate + "T" + stringHours + ":" + minutes + ":00Z";
 
 			let result: APIResponse<SafeAppointment>;
 			if (appointment)
@@ -124,13 +136,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 					appointmentID: appointment.id,
 					serviceID: selectedService,
 					staffID: selectedStaff,
-					startDate,
+					startDate: startDateString,
 				});
 			else
 				result = await createAppointment({
 					serviceID: selectedService,
 					staffID: selectedStaff,
-					startDate,
+					startDate: startDateString,
 				});
 
 			if (result.error)
