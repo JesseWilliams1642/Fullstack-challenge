@@ -2,12 +2,9 @@ import React, { useState } from "react";
 import { Scissors, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { register } from "../api/authAPI";
 import { showError } from "../lib/showError";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 
-interface RegisterPageProps {
-	onNavigate: (page: string, registerSuccess: boolean) => void;
-}
-
-export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
+export const RegisterPage: React.FC = () => {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -15,6 +12,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
+
+	const navigate: NavigateFunction = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -43,7 +42,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 			if (serverError) {
 				if (typeof serverError.message === "string") setError(serverError.message);
 				else showError(serverError);
-			} else onNavigate("login", true);
+			} else navigate("/login");
 		} catch (error: any) {
 			if (error?.response?.data?.error?.message?.message)
 				setError(error.response.data.error.message.message);
@@ -195,7 +194,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
 								Already have an account?{" "}
 								<button
 									type="button"
-									onClick={() => onNavigate("login", false)}
+									onClick={() => navigate("login")}
 									className="text-rose-600 hover:text-rose-700 font-medium"
 								>
 									Sign in here

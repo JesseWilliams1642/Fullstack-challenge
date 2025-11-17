@@ -12,12 +12,9 @@ import { BookingModal } from "./BookingModal";
 import { useAuth } from "../hooks/useAuth";
 import { deleteAppointment, getAppointments } from "../api/userAPI";
 import { showError } from "../lib/showError";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 
-interface ProfilePageProps {
-	onNavigate: (page: string) => void;
-}
-
-export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
+export const ProfilePage: React.FC = () => {
 	const { user, userLoaded } = useAuth();
 	const [appointments, setAppointments] = useState<SafeAppointment[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -25,10 +22,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigate }) => {
 	const [editingAppointment, setEditingAppointment] =
 		useState<SafeAppointment | null>(null);
 
+	const navigate: NavigateFunction = useNavigate();
+
 	useEffect(() => {
 		if (user) loadAppointments();
 		else {
-			onNavigate("login");
+			navigate("/login");
 		}
 	}, [user]);
 

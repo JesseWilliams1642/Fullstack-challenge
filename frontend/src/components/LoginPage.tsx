@@ -3,16 +3,17 @@ import { Scissors, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { login } from "../api/authAPI";
 import { showError } from "../lib/showError";
 import { useAuth } from "../hooks/useAuth";
+import {
+	useLocation,
+	useNavigate,
+	type Location,
+	type NavigateFunction,
+} from "react-router-dom";
 
-interface LoginPageProps {
-	onNavigate: (page: string) => void;
-	registerSuccess: boolean;
-}
+export const LoginPage: React.FC = () => {
+	const location: Location = useLocation();
+	const registerSuccess: boolean = location.state?.registerSuccess ?? false;
 
-export const LoginPage: React.FC<LoginPageProps> = ({
-	onNavigate,
-	registerSuccess,
-}) => {
 	const { refetchUser } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -20,6 +21,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [justRegistered, setRegistered] = useState(registerSuccess);
+
+	const navigate: NavigateFunction = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -37,7 +40,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 				else showError(error);
 			else {
 				await refetchUser(); // Get new User now that we are logged in
-				onNavigate("profile");
+				navigate("/profile");
 			}
 		} catch (error: any) {
 			if (error?.response?.data?.error?.message?.message)
@@ -144,7 +147,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 								Don't have an account?{" "}
 								<button
 									type="button"
-									onClick={() => onNavigate("register")}
+									onClick={() => navigate("/register")}
 									className="text-rose-600 hover:text-rose-700 font-medium"
 								>
 									Sign up now

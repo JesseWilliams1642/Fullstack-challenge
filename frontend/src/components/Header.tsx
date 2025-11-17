@@ -3,20 +3,25 @@ import { Scissors, User, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { logout } from "../api/authAPI";
 import { showError } from "../lib/showError";
+import {
+	useLocation,
+	useNavigate,
+	type Location,
+	type NavigateFunction,
+} from "react-router-dom";
 
-interface HeaderProps {
-	onNavigate: (page: string) => void;
-	currentPage: string;
-}
-
-export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
+export const Header: React.FC = () => {
 	const { user, userLoaded: _, setUser } = useAuth();
+
+	const navigate: NavigateFunction = useNavigate();
+	const location: Location = useLocation();
+	const currentPage: string = location.pathname;
 
 	const handleSignOut = async () => {
 		try {
 			await logout();
 			setUser(null);
-			onNavigate("home");
+			navigate("/");
 		} catch (error) {
 			showError(error);
 		}
@@ -28,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 				<div className="flex justify-between items-center h-16">
 					<div
 						className="flex items-center cursor-pointer"
-						onClick={() => onNavigate("home")}
+						onClick={() => navigate("/")}
 					>
 						<Scissors className="h-8 w-8 text-rose-600 mr-2" />
 						<h1 className="text-2xl font-bold text-gray-900">Salon Elite</h1>
@@ -38,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 						{user ? (
 							<>
 								<button
-									onClick={() => onNavigate("profile")}
+									onClick={() => navigate("/profile")}
 									className={`flex items-center px-4 py-2 rounded-md font-medium transition-colors ${
 										currentPage === "profile"
 											? "bg-rose-100 text-rose-700"
@@ -59,13 +64,13 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
 						) : (
 							<>
 								<button
-									onClick={() => onNavigate("login")}
+									onClick={() => navigate("/login")}
 									className="px-4 py-2 text-rose-600 hover:text-rose-700 font-medium transition-colors"
 								>
 									Login
 								</button>
 								<button
-									onClick={() => onNavigate("register")}
+									onClick={() => navigate("/register")}
 									className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition-colors"
 								>
 									Register

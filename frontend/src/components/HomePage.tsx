@@ -4,12 +4,10 @@ import type { GetServiceDTO } from "../dtos/service";
 import { getHomeServices } from "../api/homeAPI";
 import { durationToMinutes } from "../lib/date-to-minutes";
 import { showError } from "../lib/showError";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 
-interface HomePageProps {
-	onNavigate: (page: string) => void;
-}
-
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+export const HomePage: React.FC = () => {
+	const navigate: NavigateFunction = useNavigate();
 	const [services, setServices] = useState<GetServiceDTO[]>([]);
 
 	useEffect(() => {
@@ -39,7 +37,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 						your appointment today and discover your perfect style.
 					</p>
 					<button
-						onClick={() => onNavigate("register")}
+						onClick={() => navigate("/register")}
 						className="bg-gradient-to-r from-rose-600 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-rose-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
 					>
 						Book Your Appointment
