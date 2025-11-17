@@ -65,7 +65,8 @@ services:
       - ./frontend:/app
       - node_modules:/app/node_modules      # Stops a @rollup npm bug
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - app-network
     develop:

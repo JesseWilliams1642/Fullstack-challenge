@@ -1,7 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { GetServiceDTO } from "./modules/service/dto";
-import { APIResponse } from "./common/types";
+import { APIResponse, HealthResponse } from "./common/types";
 
 @Controller("api")
 export class AppController {
@@ -12,5 +12,12 @@ export class AppController {
 	@Get()
 	async getServices(): Promise<APIResponse<GetServiceDTO[]>> {
 		return { data: await this.appService.getService(), error: null };
+	}
+
+	// Health check, to start frontend once backend is loaded
+
+	@Get("/health")
+	async healthCheck(): Promise<HealthResponse> {
+		return { status: "ok" };
 	}
 }
