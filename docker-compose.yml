@@ -61,6 +61,7 @@ services:
       - ./frontend:/app
       - /app/node_modules     
     environment:
+      - VITE_USE_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       backend:

@@ -6,8 +6,8 @@ RUN npm i
 COPY . .
 
 # Build the frontend files
-RUN npm run build
+#RUN npm run build   DO THIS FOR PRODUCTION!!
 EXPOSE ${VITE_FRONTEND_PORT}
 
 # Serve the build
-CMD npm run dev -- --host
+CMD npm run dev
