@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-	Calendar,
-	Clock,
-	CreditCard as Edit,
-	Trash2,
-	Plus,
-	User,
-} from "lucide-react";
+	CalendarOutlined,
+	PlusOutlined,
+	UserOutlined,
+	DeleteOutlined,
+	ClockCircleOutlined,
+	CreditCardOutlined,
+} from "@ant-design/icons";
 import { type SafeAppointment } from "../types/safeAppointment";
 import { BookingModal } from "./BookingModal";
 import { useAuth } from "../hooks/useAuth";
@@ -80,7 +80,7 @@ export const ProfilePage: React.FC = () => {
 					<div className="flex items-center justify-between">
 						<div className="flex items-center">
 							<div className="bg-gradient-to-r from-rose-600 to-purple-600 rounded-full p-3 mr-4">
-								<User className="h-8 w-8 text-white" />
+								<UserOutlined style={{ fontSize: "30px", color: "white" }} />
 							</div>
 							<div>
 								<h1 className="text-2xl font-bold text-gray-900">
@@ -93,7 +93,10 @@ export const ProfilePage: React.FC = () => {
 							onClick={() => setShowBookingModal(true)}
 							className="bg-gradient-to-r from-rose-600 to-purple-600 text-white px-6 py-3 rounded-md font-medium hover:from-rose-700 hover:to-purple-700 flex items-center transition-all duration-200 shadow-lg"
 						>
-							<Plus className="h-5 w-5 mr-2" />
+							<PlusOutlined
+								style={{ fontSize: "15px" }}
+								className="mr-2"
+							/>
 							Book New Appointment
 						</button>
 					</div>
@@ -109,7 +112,10 @@ export const ProfilePage: React.FC = () => {
 						</div>
 					) : appointments.length === 0 ? (
 						<div className="text-center py-12">
-							<Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+							<CalendarOutlined
+								style={{ fontSize: "65px", color: "#D1D5DC" }}
+								className="mx-auto mb-4"
+							/>
 							<p className="text-gray-500 text-lg mb-4">No appointments scheduled</p>
 							<button
 								onClick={() => setShowBookingModal(true)}
@@ -146,11 +152,11 @@ export const ProfilePage: React.FC = () => {
 
 											<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
 												<div className="flex items-center">
-													<Calendar className="h-4 w-4 mr-2" />
+													<CalendarOutlined className="mr-2" />
 													{appointment.dateString}
 												</div>
 												<div className="flex items-center">
-													<Clock className="h-4 w-4 mr-2" />
+													<ClockCircleOutlined className="mr-2" />
 													{appointment.timeString}
 												</div>
 											</div>
@@ -166,14 +172,14 @@ export const ProfilePage: React.FC = () => {
 												className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
 												title="Edit appointment"
 											>
-												<Edit className="h-4 w-4" />
+												<CreditCardOutlined />
 											</button>
 											<button
 												onClick={() => handleDeleteAppointment(appointment.id)}
 												className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
 												title="Cancel appointment"
 											>
-												<Trash2 className="h-4 w-4" />
+												<DeleteOutlined />
 											</button>
 										</div>
 									</div>

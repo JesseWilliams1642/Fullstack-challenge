@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
+import { ClockCircleOutlined } from "@ant-design/icons";
 import type { GetServiceDTO } from "../dtos/service";
 import { getHomeServices } from "../api/homeAPI";
 import { durationToMinutes } from "../lib/date-to-minutes";
@@ -78,7 +78,7 @@ export const HomePage: React.FC = () => {
 											{service.serviceName}
 										</h3>
 										<div className="flex items-center text-sm text-gray-500">
-											<Clock className="h-4 w-4 mr-1" />
+											<ClockCircleOutlined className="h-4 w-4 mr-1" />
 											{durationToMinutes(service.serviceDuration)} min
 										</div>
 									</div>

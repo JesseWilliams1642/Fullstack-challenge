@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, Clock, User, Scissors } from "lucide-react";
+import {
+	ScissorOutlined,
+	CloseOutlined,
+	ClockCircleOutlined,
+	UserOutlined,
+	CalendarOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "../hooks/useAuth";
 import { getServices } from "../api/serviceAPI";
 import type { GetStaffDTO } from "../dtos/staff";
@@ -54,10 +60,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	// For getting the correct date and time values
 	useEffect(() => {
 		if (appointment && checkEdit) {
-			setCheckEdit(false);	
+			setCheckEdit(false);
 			setSelectedTime(appointment.timeString);
-			setSelectedDate(appointment.dateString.replace("/","-"));
-			console.log("Edit Appointment appointment:")
+			setSelectedDate(appointment.dateString.replace("/", "-"));
+			console.log("Edit Appointment appointment:");
 			console.log(appointment);
 		}
 	});
@@ -125,7 +131,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
 			const addedHours: number = suffix === "AM" ? 0 : 12;
 			let totalHours: number = Number(hours) + addedHours;
-			const stringHours: string = (totalHours < 10) ? "0" + totalHours.toString() : totalHours.toString();
+			const stringHours: string =
+				totalHours < 10 ? "0" + totalHours.toString() : totalHours.toString();
 
 			const startDateString: string =
 				selectedDate + "T" + stringHours + ":" + minutes + ":00Z";
@@ -177,7 +184,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 						onClick={onClose}
 						className="p-2 hover:bg-gray-100 rounded-full transition-colors"
 					>
-						<X className="h-6 w-6 text-gray-400" />
+						<CloseOutlined style={{ fontSize: "18px", color: "#99A1AF" }} />
 					</button>
 				</div>
 
@@ -194,7 +201,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 					{/* Service Selection */}
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">
-							<Scissors className="h-4 w-4 inline mr-2" />
+							<ScissorOutlined className="inline mr-2" />
 							Service
 						</label>
 						<select
@@ -218,7 +225,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 					{/* Staff Selection */}
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">
-							<User className="h-4 w-4 inline mr-2" />
+							<UserOutlined className="inline mr-2" />
 							Stylist
 						</label>
 						<select
@@ -242,7 +249,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 					{/* Date Selection */}
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">
-							<Calendar className="h-4 w-4 inline mr-2" />
+							<CalendarOutlined className="inline mr-2" />
 							Date
 						</label>
 						<input
@@ -259,7 +266,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 					{timeSlots.length > 0 && (
 						<div>
 							<label className="block text-sm font-medium text-gray-700 mb-2">
-								<Clock className="h-4 w-4 inline mr-2" />
+								<ClockCircleOutlined className="inline mr-2" />
 								Available Times
 							</label>
 							<div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">

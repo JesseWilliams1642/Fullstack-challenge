@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { Scissors, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import {
+	ScissorOutlined,
+	EyeOutlined,
+	EyeInvisibleOutlined,
+	MailOutlined,
+	LockOutlined,
+} from "@ant-design/icons";
 import { login } from "../api/authAPI";
 import { showError } from "../lib/showError";
 import { useAuth } from "../hooks/useAuth";
@@ -58,7 +64,7 @@ export const LoginPage: React.FC = () => {
 			<div className="max-w-md w-full space-y-8">
 				<div className="text-center">
 					<div className="flex justify-center">
-						<Scissors className="h-12 w-12 text-rose-600" />
+						<ScissorOutlined style={{ fontSize: "45px", color: "#EC003F" }} />
 					</div>
 					<h2 className="mt-6 text-3xl font-extrabold text-gray-900">Welcome back</h2>
 					<p className="mt-2 text-sm text-gray-600">
@@ -86,7 +92,7 @@ export const LoginPage: React.FC = () => {
 							</label>
 							<div className="relative">
 								<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-									<Mail className="h-5 w-5 text-gray-400" />
+									<MailOutlined className="h-5 w-5 text-gray-400" />
 								</div>
 								<input
 									id="email"
@@ -109,7 +115,7 @@ export const LoginPage: React.FC = () => {
 							</label>
 							<div className="relative">
 								<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-									<Lock className="h-5 w-5 text-gray-400" />
+									<LockOutlined className="h-5 w-5 text-gray-400" />
 								</div>
 								<input
 									id="password"
@@ -126,9 +132,9 @@ export const LoginPage: React.FC = () => {
 									className="absolute inset-y-0 right-0 pr-3 flex items-center"
 								>
 									{showPassword ? (
-										<EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+										<EyeInvisibleOutlined className="h-5 w-5 text-gray-400 hover:text-gray-600" />
 									) : (
-										<Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+										<EyeOutlined className="h-5 w-5 text-gray-400 hover:text-gray-600" />
 									)}
 								</button>
 							</div>

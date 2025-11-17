@@ -1,5 +1,9 @@
 import React from "react";
-import { Scissors, User, LogOut } from "lucide-react";
+import {
+	ScissorOutlined,
+	UserOutlined,
+	LogoutOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "../hooks/useAuth";
 import { logout } from "../api/authAPI";
 import { showError } from "../lib/showError";
@@ -35,7 +39,10 @@ export const Header: React.FC = () => {
 						className="flex items-center cursor-pointer"
 						onClick={() => navigate("/")}
 					>
-						<Scissors className="h-8 w-8 text-rose-600 mr-2" />
+						<ScissorOutlined
+							style={{ fontSize: "24px", color: "#EC003F" }}
+							className="mr-2"
+						/>
 						<h1 className="text-2xl font-bold text-gray-900">Salon Elite</h1>
 					</div>
 
@@ -50,14 +57,14 @@ export const Header: React.FC = () => {
 											: "text-gray-700 hover:bg-gray-100"
 									}`}
 								>
-									<User className="h-4 w-4 mr-2" />
+									<UserOutlined className="h-4 w-4 mr-2" />
 									Profile
 								</button>
 								<button
 									onClick={handleSignOut}
 									className="flex items-center px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-100 transition-colors"
 								>
-									<LogOut className="h-4 w-4 mr-2" />
+									<LogoutOutlined className="h-4 w-4 mr-2" />
 									Sign Out
 								</button>
 							</>
