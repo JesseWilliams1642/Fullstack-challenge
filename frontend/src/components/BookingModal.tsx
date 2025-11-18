@@ -61,10 +61,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	useEffect(() => {
 		if (appointment && checkEdit) {
 			setCheckEdit(false);
-			setSelectedTime(appointment.timeString);
-			setSelectedDate(appointment.dateString.replace("/", "-"));
-			console.log("Edit Appointment appointment:");
-			console.log(appointment);
+
+			// Convert the time to ISO 8601 standard
+			const separatedDate: string[] = appointment.dateString.split("/");
+			if (separatedDate.length === 3) {
+				const isoDate: string =
+					separatedDate[2] + "-" + separatedDate[1] + "-" + separatedDate[0];
+				setSelectedTime(appointment.timeString);
+				setSelectedDate(isoDate);
+			} else
+				setError(
+					"Error: Appointment date did not convert correctly. Please submit this bug to a system administrator.",
+				);
 		}
 	});
 
@@ -95,7 +103,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			const { data: slots, error: timeSlotError } = await getAppointmentAvailability({
 				serviceID: selectedService,
 				date: selectedDate,
-				time: selectedTime,
 				staffID: selectedStaff,
 			});
 
@@ -108,7 +115,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 					setError("No available appointments for these selections.");
 				else setError("");
 			}
-			console.log(error);
 		} catch (timeSlotError) {
 			showError(timeSlotError);
 		}

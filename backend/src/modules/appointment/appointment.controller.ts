@@ -24,13 +24,14 @@ export class AppointmentController {
 	async getAppointments(
 		@Query() dto: GetAppointmentAvailabilityDTO,
 	): Promise<APIResponse<string[]>> {
+		console.log(dto);
 		return {
 			data: await this.appointmentService.getAvailabilities(
-						dto.serviceID,
-						new Date(dto.date),
-						dto.staffID,
-					),
-			error: null
-		}
+				dto.serviceID,
+				new Date(dto.date),
+				dto.staffID,
+			),
+			error: null,
+		};
 	}
 }
