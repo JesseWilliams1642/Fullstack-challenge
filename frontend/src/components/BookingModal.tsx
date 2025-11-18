@@ -104,6 +104,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 				serviceID: selectedService,
 				date: selectedDate,
 				staffID: selectedStaff,
+				appointmentID: appointment?.id,
 			});
 
 			const processedSlots: string[] = slots ?? [];

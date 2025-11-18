@@ -30,6 +30,7 @@ export class AppointmentController {
 				dto.serviceID,
 				new Date(dto.date),
 				dto.staffID,
+				dto.appointmentID ?? null,
 			),
 			error: null,
 		};

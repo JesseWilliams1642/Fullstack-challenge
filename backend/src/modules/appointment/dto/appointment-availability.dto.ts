@@ -12,4 +12,7 @@ export class GetAppointmentAvailabilityDTO {
 	@IsUUID(undefined, { message: "Staff ID must be a valid UUID." })
 	@IsNotEmpty({ message: "Staff ID can not be empty." })
 	staffID!: string;
+
+	@IsUUID(undefined, { message: "Appointment ID must be a valid UUID." })
+	appointmentID?: string;
 }

@@ -23,6 +23,7 @@ export class AppointmentService {
 		serviceID: string,
 		day: Date,
 		staffID: string,
+		appointmentID: string | null,
 	): Promise<string[]> {
 		// Get required data
 		const service: Service | null = await this.serviceRepository.findOneBy({
@@ -89,8 +90,22 @@ export class AppointmentService {
 
 			const endTime: number = startTime + duration;
 
+			// Check if we are looking at the appointment we are currently editting
+			// (if we are editting an appointment)
+			// Skip it, so that we can change to appointments previously untouchable due to that
+			// appointment
+			if (
+				appointmentID &&
+				staffAppointmentSize !== staffAppointmentIndex &&
+				staffAppointments[staffAppointmentIndex].id === appointmentID
+			)
+				staffAppointmentIndex = staffAppointmentIndex + 1;
+
 			// Checks for if there are any staff appointments for this day
-			if (staffAppointmentSize > 0) {
+			if (
+				staffAppointmentSize > 0 &&
+				staffAppointmentSize !== staffAppointmentIndex
+			) {
 				// Get current appointment information
 				const appointmentStart: number =
 					staffAppointments[staffAppointmentIndex].startTimestamp.getTime();
