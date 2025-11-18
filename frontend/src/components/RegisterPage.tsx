@@ -49,7 +49,10 @@ export const RegisterPage: React.FC = () => {
 			if (serverError) {
 				if (typeof serverError.message === "string") setError(serverError.message);
 				else showError(serverError);
-			} else navigate("/login");
+			} else
+				navigate("/login", {
+					state: { registerSuccess: true },
+				});
 		} catch (error: any) {
 			if (error?.response?.data?.error?.message?.message)
 				setError(error.response.data.error.message.message);
@@ -201,7 +204,7 @@ export const RegisterPage: React.FC = () => {
 								Already have an account?{" "}
 								<button
 									type="button"
-									onClick={() => navigate("login")}
+									onClick={() => navigate("/login")}
 									className="text-rose-600 hover:text-rose-700 font-medium"
 								>
 									Sign in here
