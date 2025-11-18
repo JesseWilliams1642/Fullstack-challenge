@@ -70,43 +70,47 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
 	const loadServices = async () => {
 		try {
-			const { data, error } = await getServices();
+			const { data, error: serviceError } = await getServices();
 
-			if (error) showError(error);
+			if (serviceError) showError(serviceError);
 			else setServices(data || []);
-		} catch (error) {
-			showError(error);
+		} catch (serviceError) {
+			showError(serviceError);
 		}
 	};
 
 	const loadStaff = async () => {
 		try {
-			const { data, error } = await getStaff();
+			const { data, error: staffError } = await getStaff();
 
-			if (error) showError(error);
+			if (staffError) showError(staffError);
 			else setStaff(data || []);
-		} catch (error) {
-			showError(error);
+		} catch (staffError) {
+			showError(staffError);
 		}
 	};
 
 	const generateTimeSlots = async () => {
 		try {
-			const { data: slots, error } = await getAppointmentAvailability({
+			const { data: slots, error: timeSlotError } = await getAppointmentAvailability({
 				serviceID: selectedService,
 				date: selectedDate,
 				time: selectedTime,
 				staffID: selectedStaff,
 			});
 
-			if (error) showError(error);
+			const processedSlots: string[] = slots ?? [];
+
+			if (timeSlotError) showError(timeSlotError);
 			else {
-				setTimeSlots(slots ?? []);
-				if (slots) setError("");
-				else setError("No available appointments for these selections.");
+				setTimeSlots(processedSlots);
+				if (processedSlots.length === 0)
+					setError("No available appointments for these selections.");
+				else setError("");
 			}
-		} catch (error) {
-			showError(error);
+			console.log(error);
+		} catch (timeSlotError) {
+			showError(timeSlotError);
 		}
 	};
 
