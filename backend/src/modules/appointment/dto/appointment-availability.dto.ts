@@ -1,4 +1,5 @@
-import { IsISO8601, IsNotEmpty, IsUUID } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsISO8601, IsNotEmpty, IsOptional, IsUUID } from "class-validator";
 
 export class GetAppointmentAvailabilityDTO {
 	@IsUUID(undefined, { message: "Service ID must be a valid UUID." })
@@ -13,6 +14,10 @@ export class GetAppointmentAvailabilityDTO {
 	@IsNotEmpty({ message: "Staff ID can not be empty." })
 	staffID!: string;
 
+	// Transforms lets "" get treated as undefined, which IsOptional looks for
+	// By default, "" is a defined string and is checked by UUID
+	@Transform(({ value }) => (value === "" ? undefined : value))
+	@IsOptional()
 	@IsUUID(undefined, { message: "Appointment ID must be a valid UUID." })
 	appointmentID?: string;
 }
