@@ -4,6 +4,7 @@ import {
 	UserOutlined,
 	LogoutOutlined,
 } from "@ant-design/icons";
+import { Button } from "antd";
 import { useAuth } from "../hooks/useAuth";
 import { logout } from "../api/authAPI";
 import { showError } from "../lib/showError";
@@ -16,7 +17,6 @@ import {
 
 export const Header: React.FC = () => {
 	const { user, userLoaded: _, setUser } = useAuth();
-
 	const navigate: NavigateFunction = useNavigate();
 	const location: Location = useLocation();
 	const currentPage: string = location.pathname;
@@ -32,56 +32,101 @@ export const Header: React.FC = () => {
 	};
 
 	return (
-		<header className="bg-white shadow-md">
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex justify-between items-center h-16">
+		<header
+			style={{ backgroundColor: "#ffffff", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+		>
+			<div style={{ maxWidth: "1120px", margin: "0 auto", padding: "0 16px" }}>
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						height: "64px",
+					}}
+				>
+					{/* Logo */}
 					<div
-						className="flex items-center cursor-pointer"
+						style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
 						onClick={() => navigate("/")}
 					>
 						<ScissorOutlined
-							style={{ fontSize: "24px", color: "#EC003F" }}
-							className="mr-2"
+							style={{ fontSize: "24px", color: "#EC003F", marginRight: "8px" }}
 						/>
-						<h1 className="text-2xl font-bold text-gray-900">Salon Elite</h1>
+						<h1
+							style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#111827", margin: 0 }}
+						>
+							Salon Elite
+						</h1>
 					</div>
 
-					<div className="flex items-center space-x-4">
+					{/* Buttons */}
+					<div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
 						{user ? (
 							<>
-								<button
+								<Button
+									type={currentPage === "/profile" ? "default" : "text"}
 									onClick={() => navigate("/profile")}
-									className={`flex items-center px-4 py-2 rounded-md font-medium transition-colors ${
-										currentPage === "profile"
-											? "bg-rose-100 text-rose-700"
-											: "text-gray-700 hover:bg-gray-100"
-									}`}
+									icon={<UserOutlined />}
+									style={{
+										display: "flex",
+										alignItems: "center",
+										padding: "8px 16px",
+										fontWeight: 500,
+										backgroundColor: currentPage === "/profile" ? "#FEE2E2" : undefined,
+										color: currentPage === "/profile" ? "#BE123C" : "#374151",
+										border: "none",
+										fontSize: "15px",
+									}}
 								>
-									<UserOutlined className="h-4 w-4 mr-2" />
 									Profile
-								</button>
-								<button
+								</Button>
+
+								<Button
 									onClick={handleSignOut}
-									className="flex items-center px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+									icon={<LogoutOutlined />}
+									style={{
+										display: "flex",
+										alignItems: "center",
+										padding: "8px 16px",
+										fontWeight: 500,
+										color: "#374151",
+										border: "none",
+										fontSize: "15px",
+									}}
 								>
-									<LogoutOutlined className="h-4 w-4 mr-2" />
 									Sign Out
-								</button>
+								</Button>
 							</>
 						) : (
 							<>
-								<button
+								<Button
+									type="text"
 									onClick={() => navigate("/login")}
-									className="px-4 py-2 text-rose-600 hover:text-rose-700 font-medium transition-colors"
+									style={{
+										padding: "8px 16px",
+										color: "#EC003F",
+										fontWeight: 500,
+										fontSize: "15px",
+									}}
 								>
 									Login
-								</button>
-								<button
+								</Button>
+
+								<Button
+									type="primary"
 									onClick={() => navigate("/register")}
-									className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition-colors"
+									style={{
+										backgroundColor: "#EC003F",
+										color: "#ffffff",
+										borderRadius: "6px",
+										padding: "8px 16px",
+										fontWeight: 500,
+										border: "none",
+										fontSize: "15px",
+									}}
 								>
 									Register
-								</button>
+								</Button>
 							</>
 						)}
 					</div>

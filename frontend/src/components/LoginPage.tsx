@@ -6,6 +6,7 @@ import {
 	MailOutlined,
 	LockOutlined,
 } from "@ant-design/icons";
+import { Input, Button } from "antd";
 import { login } from "../api/authAPI";
 import { showError } from "../lib/showError";
 import { useAuth } from "../hooks/useAuth";
@@ -23,7 +24,6 @@ export const LoginPage: React.FC = () => {
 	const { refetchUser } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [showPassword, setShowPassword] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [justRegistered, setRegistered] = useState(registerSuccess);
@@ -60,112 +60,174 @@ export const LoginPage: React.FC = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-			<div className="max-w-md w-full space-y-8">
-				<div className="text-center">
-					<div className="flex justify-center">
+		<div
+			style={{
+				minHeight: "100vh",
+				background: "linear-gradient(to bottom right, #fff1f2, #faf5ff)",
+				display: "flex",
+				justifyContent: "center",
+				alignItems: "center",
+				padding: "48px 16px",
+			}}
+		>
+			<div style={{ maxWidth: "500px", width: "100%" }}>
+				{/* Header */}
+				<div style={{ textAlign: "center", marginBottom: "24px" }}>
+					<div style={{ display: "flex", justifyContent: "center" }}>
 						<ScissorOutlined style={{ fontSize: "45px", color: "#EC003F" }} />
 					</div>
-					<h2 className="mt-6 text-3xl font-extrabold text-gray-900">Welcome back</h2>
-					<p className="mt-2 text-sm text-gray-600">
+					<h2
+						style={{
+							marginTop: "24px",
+							fontSize: "1.875rem",
+							fontWeight: 800,
+							color: "#111827",
+						}}
+					>
+						Welcome back
+					</h2>
+					<p style={{ marginTop: "8px", fontSize: "0.9rem", color: "#4B5563" }}>
 						Sign in to manage your appointments
 					</p>
 				</div>
 
-				<div className="bg-white rounded-xl shadow-lg p-8">
+				{/* Form */}
+				<div
+					style={{
+						backgroundColor: "#ffffff",
+						borderRadius: "16px",
+						boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+						padding: "50px",
+						paddingBottom: "40px",
+					}}
+				>
 					<form
-						className="space-y-6"
 						onSubmit={handleSubmit}
+						style={{ display: "flex", flexDirection: "column", gap: "16px" }}
 					>
 						{error && (
-							<div className="bg-red-50 border border-red-200 rounded-md p-4">
-								<p className="text-red-600 text-sm">{error}</p>
+							<div
+								style={{
+									backgroundColor: "#FEF2F2",
+									border: "1px solid #FECACA",
+									borderRadius: "8px",
+									padding: "12px",
+								}}
+							>
+								<p style={{ color: "#B91C1C", fontSize: "0.875rem", margin: 0 }}>{error}</p>
 							</div>
 						)}
 
+						{/* Email Input */}
 						<div>
 							<label
 								htmlFor="email"
-								className="block text-sm font-medium text-gray-700 mb-2"
+								style={{
+									display: "block",
+									fontSize: "0.875rem",
+									fontWeight: 500,
+									color: "#374151",
+									marginBottom: "8px",
+								}}
 							>
 								Email address
 							</label>
-							<div className="relative">
-								<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-									<MailOutlined className="h-5 w-5 text-gray-400" />
-								</div>
-								<input
-									id="email"
-									type="email"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									required
-									className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
-									placeholder="Enter your email"
-								/>
-							</div>
+							<Input
+								id="email"
+								type="email"
+								placeholder="Enter your email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								prefix={<MailOutlined style={{ color: "#9CA3AF", paddingRight: "3px" }} />}
+								style={{ padding: "12px", fontSize: "1rem", borderRadius: "8px" }}
+								required
+							/>
 						</div>
 
+						{/* Password Input */}
 						<div>
 							<label
 								htmlFor="password"
-								className="block text-sm font-medium text-gray-700 mb-2"
+								style={{
+									display: "block",
+									fontSize: "0.875rem",
+									fontWeight: 500,
+									color: "#374151",
+									marginBottom: "8px",
+								}}
 							>
 								Password
 							</label>
-							<div className="relative">
-								<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-									<LockOutlined className="h-5 w-5 text-gray-400" />
-								</div>
-								<input
-									id="password"
-									type={showPassword ? "text" : "password"}
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									required
-									className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-colors"
-									placeholder="Enter your password"
-								/>
-								<button
-									type="button"
-									onClick={() => setShowPassword(!showPassword)}
-									className="absolute inset-y-0 right-0 pr-3 flex items-center"
-								>
-									{showPassword ? (
-										<EyeInvisibleOutlined className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+							<Input.Password
+								id="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								prefix={<LockOutlined style={{ color: "#9CA3AF", paddingRight: "3px" }} />}
+								placeholder="Enter your password"
+								iconRender={(visible) =>
+									visible ? (
+										<EyeInvisibleOutlined style={{ color: "#9CA3AF" }} />
 									) : (
-										<EyeOutlined className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-									)}
-								</button>
-							</div>
+										<EyeOutlined style={{ color: "#9CA3AF" }} />
+									)
+								}
+								style={{ padding: "12px", fontSize: "1rem", borderRadius: "8px" }}
+								required
+							/>
 						</div>
 
-						<button
-							type="submit"
-							disabled={loading}
-							className="w-full bg-gradient-to-r from-rose-600 to-purple-600 text-white py-3 px-4 rounded-md font-medium hover:from-rose-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+						{/* Submit Button */}
+						<Button
+							type="primary"
+							htmlType="submit"
+							loading={loading}
+							style={{
+								width: "100%",
+								padding: "20px",
+								fontSize: "1rem",
+								fontWeight: 500,
+								background: "linear-gradient(to right, #EC003F, #A78BFA)",
+								border: "none",
+								borderRadius: "8px",
+							}}
 						>
 							{loading ? "Signing in..." : "Sign in"}
-						</button>
+						</Button>
 
-						<div className="text-center">
-							<p className="text-sm text-gray-600">
+						{/* Register Link */}
+						<div style={{ textAlign: "center" }}>
+							<p style={{ fontSize: "0.875rem", color: "#4B5563" }}>
 								Don't have an account?{" "}
-								<button
-									type="button"
+								<Button
+									type="text"
 									onClick={() => navigate("/register")}
-									className="text-rose-600 hover:text-rose-700 font-medium"
+									style={{
+										color: "#EC003F",
+										fontWeight: 500,
+										padding: 0,
+									}}
 								>
 									Sign up now
-								</button>
+								</Button>
 							</p>
 						</div>
 					</form>
 				</div>
 
-				<div className="text-green-600 font-medium text-sm text-center">
-					{justRegistered ? "Account registered successfully" : ""}
-				</div>
+				{/* Registration success message */}
+				{justRegistered && (
+					<div
+						style={{
+							color: "#059669",
+							fontWeight: 500,
+							fontSize: "0.875rem",
+							textAlign: "center",
+							marginTop: "16px",
+						}}
+					>
+						Account registered successfully
+					</div>
+				)}
 			</div>
 		</div>
 	);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Image, Card, Button } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import type { GetServiceDTO } from "../dtos/service";
 import { getHomeServices } from "../api/homeAPI";
@@ -22,70 +23,188 @@ export const HomePage: React.FC = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50">
+		<div
+			style={{
+				minHeight: "100vh",
+				backgroundImage: "linear-gradient(to bottom right, #fff1f2, #faf5ff)",
+			}}
+		>
 			{/* Hero Section */}
-			<section className="py-20 px-4 sm:px-6 lg:px-8">
-				<div className="max-w-7xl mx-auto text-center">
-					<h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
+			<section style={{ padding: "60px 16px" }}>
+				<div
+					style={{
+						maxWidth: "1120px",
+						margin: "0 auto",
+						textAlign: "center",
+					}}
+				>
+					<h1
+						style={{
+							fontSize: "3.2rem",
+							fontWeight: "bold",
+							color: "#111827",
+							marginBottom: "24px",
+						}}
+					>
 						Transform Your Look At
-						<span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-purple-600 block">
+						<span
+							style={{
+								backgroundImage: "linear-gradient(to right, #e11d48, #9333ea)",
+								WebkitBackgroundClip: "text",
+								color: "transparent",
+								display: "block",
+							}}
+						>
 							Salon Elite
 						</span>
 					</h1>
-					<p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+
+					<p
+						style={{
+							fontSize: "1.1rem",
+							color: "#4b5563",
+							marginBottom: "32px",
+							maxWidth: "600px",
+							marginLeft: "auto",
+							marginRight: "auto",
+						}}
+					>
 						Experience luxury hair care with our expert stylists and premium services. Book
 						your appointment today and discover your perfect style.
 					</p>
-					<button
+
+					<Button
+						type="primary"
 						onClick={() => navigate("/register")}
-						className="bg-gradient-to-r from-rose-600 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-rose-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
+						style={{
+							backgroundImage: "linear-gradient(to right, #e11d48, #9333ea)",
+							border: "none",
+							padding: "24px 32px",
+							borderRadius: "9999px",
+							fontSize: "18px",
+							fontWeight: 600,
+							boxShadow: "0 10px 15px rgba(0,0,0,0.15)",
+							transition: "all 0.2s ease",
+						}}
+						onMouseEnter={(e) => {
+							(e.currentTarget as HTMLButtonElement).style.transform = "scale(1.05)";
+							(e.currentTarget as HTMLButtonElement).style.backgroundImage =
+								"linear-gradient(to right, #be123c, #7e22ce)";
+						}}
+						onMouseLeave={(e) => {
+							(e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+							(e.currentTarget as HTMLButtonElement).style.backgroundImage =
+								"linear-gradient(to right, #e11d48, #9333ea)";
+						}}
 					>
 						Book Your Appointment
-					</button>
+					</Button>
 				</div>
 			</section>
 
 			{/* Services Section */}
-			<section className="py-16 px-4 sm:px-6 lg:px-8">
-				<div className="max-w-7xl mx-auto">
-					<div className="text-center mb-12">
-						<h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+			<section style={{ padding: "64px 16px", paddingBottom: "120px" }}>
+				<div style={{ maxWidth: "1120px", margin: "0 auto" }}>
+					<div style={{ textAlign: "center", marginBottom: "28px" }}>
+						<h2
+							style={{
+								fontSize: "2rem",
+								fontWeight: "bold",
+								color: "#111827",
+								marginBottom: "16px",
+							}}
+						>
 							Our Premium Services
 						</h2>
-						<p className="text-lg text-gray-600">
+						<p style={{ fontSize: "1.125rem", color: "#4b5563" }}>
 							Professional hair care services tailored to your unique style
 						</p>
 					</div>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					{/* Responsive grid (converted manually) */}
+					<div
+						style={{
+							display: "grid",
+							gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+							gap: "32px",
+						}}
+					>
 						{services.map((service) => (
-							<div
+							<Card
 								key={service.id}
-								className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
+								style={{
+									borderRadius: "12px",
+									overflow: "hidden",
+									boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
+									transition: "box-shadow 0.3s",
+								}}
+								bodyStyle={{ padding: 0 }}
+								onMouseEnter={(e) => {
+									(e.currentTarget as HTMLDivElement).style.boxShadow =
+										"0 12px 20px rgba(0,0,0,0.18)";
+								}}
+								onMouseLeave={(e) => {
+									(e.currentTarget as HTMLDivElement).style.boxShadow =
+										"0 10px 15px rgba(0,0,0,0.1)";
+								}}
 							>
-								<div className="relative overflow-hidden">
-									<img
+								<div style={{ height: "200px", width: "100%", overflow: "hidden" }}>
+									<Image
 										src={service.serviceImage}
 										alt={service.serviceName}
-										className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+										width="100%"
+										height="100%"
+										style={{ objectFit: "cover" }}
 									/>
-									<div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 								</div>
 
-								<div className="p-6">
-									<div className="flex justify-between items-center">
-										<h3 className="text-xl font-semibold text-gray-900 mb-2">
+								<div style={{ padding: "24px" }}>
+									<div
+										style={{
+											display: "flex",
+											justifyContent: "space-between",
+											alignItems: "center",
+										}}
+									>
+										<h3
+											style={{
+												fontSize: "16px",
+												fontWeight: 600,
+												color: "#111827",
+												marginBottom: "8px",
+												flex: 1,
+												marginRight: "8px",
+												wordBreak: "break-word",
+											}}
+										>
 											{service.serviceName}
 										</h3>
-										<div className="flex items-center text-sm text-gray-500">
-											<ClockCircleOutlined className="h-4 w-4 mr-1" />
+
+										<div
+											style={{
+												display: "flex",
+												alignItems: "center",
+												color: "#6b7280",
+												fontSize: "14px",
+												whiteSpace: "nowrap",
+												flexShrink: 0,
+											}}
+										>
+											<ClockCircleOutlined style={{ marginRight: "4px" }} />
 											{durationToMinutes(service.serviceDuration)} min
 										</div>
 									</div>
 
-									<p className="text-gray-600 mt-2 mb-1">{service.serviceDescription}</p>
+									<p
+										style={{
+											color: "#4b5563",
+											marginTop: "8px",
+										}}
+									>
+										{service.serviceDescription}
+									</p>
 								</div>
-							</div>
+							</Card>
 						))}
 					</div>
 				</div>
