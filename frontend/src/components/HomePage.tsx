@@ -30,12 +30,13 @@ export const HomePage: React.FC = () => {
 			}}
 		>
 			{/* Hero Section */}
-			<section style={{ padding: "60px 16px" }}>
+			<section style={{ padding: "20px 16px" }}>
 				<div
 					style={{
 						maxWidth: "1120px",
 						margin: "0 auto",
 						textAlign: "center",
+						marginTop: "70px",
 					}}
 				>
 					<h1

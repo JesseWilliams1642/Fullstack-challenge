@@ -7,6 +7,7 @@ import {
 	ClockCircleOutlined,
 	CreditCardOutlined,
 } from "@ant-design/icons";
+import { Button, Card, Spin, Badge } from "antd";
 import { type SafeAppointment } from "../types/safeAppointment";
 import { BookingModal } from "./BookingModal";
 import { useAuth } from "../hooks/useAuth";
@@ -26,9 +27,7 @@ export const ProfilePage: React.FC = () => {
 
 	useEffect(() => {
 		if (user) loadAppointments();
-		else {
-			navigate("/login");
-		}
+		else navigate("/login");
 	}, [user]);
 
 	const loadAppointments = async () => {
@@ -38,7 +37,6 @@ export const ProfilePage: React.FC = () => {
 
 		try {
 			const { data, error } = await getAppointments();
-
 			if (error) showError(error);
 			else setAppointments(data || []);
 		} catch (error) {
@@ -53,7 +51,6 @@ export const ProfilePage: React.FC = () => {
 
 		try {
 			const { data: _, error } = await deleteAppointment(appointmentId);
-
 			if (error) showError(error);
 			else loadAppointments();
 		} catch (error) {
@@ -72,122 +69,191 @@ export const ProfilePage: React.FC = () => {
 		loadAppointments();
 	};
 
+	const getStatusStyle = (status: string) => {
+		switch (status) {
+			case "scheduled":
+				return { backgroundColor: "#d1fae5", color: "#065f46" };
+			case "completed":
+				return { backgroundColor: "#dbeafe", color: "#1e3a8a" };
+			case "canceled":
+				return { backgroundColor: "#fee2e2", color: "#b91c1c" };
+			default:
+				return {};
+		}
+	};
+
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 py-8">
-			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div
+			style={{
+				minHeight: "100vh",
+				padding: "32px 0",
+				background: "linear-gradient(to bottom right, #fff1f2, #f3e8ff)",
+			}}
+		>
+			<div style={{ maxWidth: "1024px", margin: "0 auto", padding: "0 16px" }}>
 				{/* Profile Header */}
-				<div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center">
-							<div className="bg-gradient-to-r from-rose-600 to-purple-600 rounded-full p-3 mr-4">
+				<Card
+					style={{ marginBottom: "32px", borderRadius: "12px", padding: "24px" }}
+					bodyStyle={{ padding: 0 }}
+				>
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "space-between",
+							alignItems: "center",
+						}}
+					>
+						<div style={{ display: "flex", alignItems: "center" }}>
+							<div
+								style={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									background: "linear-gradient(to right, #be123c, #7e22ce)",
+									borderRadius: "50%",
+									padding: "12px",
+									marginRight: "16px",
+								}}
+							>
 								<UserOutlined style={{ fontSize: "30px", color: "white" }} />
 							</div>
 							<div>
-								<h1 className="text-2xl font-bold text-gray-900">
+								<h1 style={{ fontSize: "27px", fontWeight: 700, color: "#111827" }}>
 									Welcome back, {user?.name || user?.email}!
 								</h1>
-								<p className="text-gray-600">Manage your appointments and bookings</p>
+								<p style={{ color: "#4b5563", fontSize: "15px" }}>
+									Manage your appointments and bookings
+								</p>
 							</div>
 						</div>
-						<button
+						<Button
+							type="primary"
+							icon={<PlusOutlined />}
+							style={{
+								background: "linear-gradient(to right, #be123c, #7e22ce)",
+								border: "none",
+								fontWeight: 500,
+								padding: "23px",
+							}}
 							onClick={() => setShowBookingModal(true)}
-							className="bg-gradient-to-r from-rose-600 to-purple-600 text-white px-6 py-3 rounded-md font-medium hover:from-rose-700 hover:to-purple-700 flex items-center transition-all duration-200 shadow-lg"
 						>
-							<PlusOutlined
-								style={{ fontSize: "15px" }}
-								className="mr-2"
-							/>
 							Book New Appointment
-						</button>
+						</Button>
 					</div>
-				</div>
+				</Card>
 
 				{/* Appointments Section */}
-				<div className="bg-white rounded-xl shadow-lg p-6">
-					<h2 className="text-xl font-bold text-gray-900 mb-6">Your Appointments</h2>
+				<Card style={{ borderRadius: "12px", padding: "16px" }}>
+					<h2
+						style={{
+							fontSize: "20px",
+							fontWeight: 700,
+							marginBottom: "24px",
+							color: "#111827",
+						}}
+					>
+						Your Appointments
+					</h2>
 
 					{loading && userLoaded ? (
-						<div className="flex justify-center py-12">
-							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
+						<div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
+							<Spin size="large" />
 						</div>
 					) : appointments.length === 0 ? (
-						<div className="text-center py-12">
+						<div style={{ textAlign: "center", padding: "48px 0" }}>
 							<CalendarOutlined
-								style={{ fontSize: "65px", color: "#D1D5DC" }}
-								className="mx-auto mb-4"
+								style={{ fontSize: "65px", color: "#D1D5DC", marginBottom: "16px" }}
 							/>
-							<p className="text-gray-500 text-lg mb-4">No appointments scheduled</p>
-							<button
+							<p style={{ color: "#6b7280", fontSize: "16px", marginBottom: "16px" }}>
+								No Appointments Scheduled
+							</p>
+							<Button
+								type="primary"
+								style={{
+									background: "linear-gradient(to right, #be123c, #7e22ce)",
+									border: "none",
+									fontWeight: 600,
+									padding: "18px",
+								}}
 								onClick={() => setShowBookingModal(true)}
-								className="bg-gradient-to-r from-rose-600 to-purple-600 text-white px-6 py-3 rounded-md font-medium hover:from-rose-700 hover:to-purple-700 transition-all duration-200"
 							>
 								Book Your First Appointment
-							</button>
+							</Button>
 						</div>
 					) : (
-						<div className="grid gap-6">
+						<div style={{ display: "grid", gap: "24px" }}>
 							{appointments.map((appointment) => (
-								<div
+								<Card
 									key={appointment.id}
-									className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200"
+									hoverable
+									style={{ borderRadius: "8px", borderColor: "#e5e7eb", padding: "16px" }}
+									bodyStyle={{ padding: 0 }}
 								>
-									<div className="flex items-start justify-between">
-										<div className="flex-1">
-											<div className="flex items-center mb-2">
-												<h3 className="text-lg font-semibold text-gray-900 mr-4">
+									<div
+										style={{
+											display: "flex",
+											justifyContent: "space-between",
+											alignItems: "flex-start",
+										}}
+									>
+										<div style={{ flex: 1 }}>
+											<div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+												<h3
+													style={{
+														fontSize: "18px",
+														fontWeight: 600,
+														marginRight: "12px",
+														color: "#111827",
+													}}
+												>
 													{appointment.serviceName}
 												</h3>
-												<span
-													className={`px-3 py-1 rounded-full text-xs font-medium ${
-														appointment.status === "scheduled"
-															? "bg-green-100 text-green-800"
-															: appointment.status === "completed"
-															? "bg-blue-100 text-blue-800"
-															: "bg-red-100 text-red-800"
-													}`}
-												>
-													{appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-												</span>
+												<Badge
+													count={appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+													style={{
+														...getStatusStyle(appointment.status),
+														fontWeight: 500,
+														padding: "0 10px",
+													}}
+												/>
 											</div>
 
-											<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
-												<div className="flex items-center">
-													<CalendarOutlined className="mr-2" />
-													{appointment.dateString}
-												</div>
-												<div className="flex items-center">
-													<ClockCircleOutlined className="mr-2" />
-													{appointment.timeString}
-												</div>
+											<div
+												style={{
+													color: "#4b5563",
+													fontSize: "15px",
+												}}
+											>
+												<CalendarOutlined style={{ marginRight: "8px" }} />
+												{appointment.dateString}
+												<ClockCircleOutlined style={{ marginRight: "8px", marginLeft: "30px" }} />
+												{appointment.timeString}
 											</div>
 
-											<p className="text-gray-600 mt-2">
+											<p style={{ marginTop: "8px", color: "#4b5563", fontSize: "15px" }}>
 												<strong>Stylist:</strong> {appointment.staffName}
 											</p>
 										</div>
 
-										<div className="flex space-x-2 ml-4">
-											<button
+										<div style={{ display: "flex", gap: "8px", marginLeft: "16px" }}>
+											<Button
+												type="default"
+												icon={<CreditCardOutlined />}
 												onClick={() => handleEditAppointment(appointment)}
-												className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
-												title="Edit appointment"
-											>
-												<CreditCardOutlined />
-											</button>
-											<button
+											/>
+											<Button
+												type="default"
+												danger
+												icon={<DeleteOutlined />}
 												onClick={() => handleDeleteAppointment(appointment.id)}
-												className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-												title="Cancel appointment"
-											>
-												<DeleteOutlined />
-											</button>
+											/>
 										</div>
 									</div>
-								</div>
+								</Card>
 							))}
 						</div>
 					)}
-				</div>
+				</Card>
 			</div>
 
 			{/* Booking Modal */}
