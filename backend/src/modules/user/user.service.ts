@@ -55,22 +55,11 @@ export class UserService {
 		const appointmentAvailable: boolean =
 			await this.appointmentService.checkAppointmentAvailability(
 				startDate,
-				serviceID,
-				staffID,
-			);
-
-		// Check if there is overlap with the user's pre-existing appointments
-		if (user.appointments) {
-			const overlap: boolean = await this.appointmentService.checkAppointmentOverlap(
 				user,
 				service,
-				startDate,
+				staff,
+				null,
 			);
-			if (overlap)
-				throw new BadRequestException(
-					"Appointment overlaps with pre-existing user appointment.",
-				);
-		}
 
 		if (appointmentAvailable) {
 			const newAppointment = new Appointment(startDate, service, user, staff);
@@ -184,22 +173,10 @@ export class UserService {
 		const appointmentAvailable: boolean =
 			await this.appointmentService.checkAppointmentAvailability(
 				startDate,
-				dto.serviceID,
-				dto.staffID,
-				appointment,
-			);
-
-		// Check if there is overlap with the user's pre-existing appointments
-		const appointmentOverlap: boolean =
-			await this.appointmentService.checkAppointmentOverlap(
 				user,
 				service,
-				startDate,
+				staff,
 				appointment,
-			);
-		if (appointmentOverlap)
-			throw new BadRequestException(
-				"Appointment overlaps with pre-existing user appointment.",
 			);
 
 		if (appointmentAvailable) {
@@ -229,13 +206,10 @@ export class UserService {
 		for (const _appointment of user.appointments) {
 			console.log("APPOINTMENTS:");
 			console.log(`Appoinment Delete ID: ${appointmentID}`);
-			console.log(`Appointment Loop ID: ${_appointment.id}`)
-			
+			console.log(`Appointment Loop ID: ${_appointment.id}`);
+
 			if (_appointment.id === appointmentID) appointment = _appointment;
-
-
 		}
-			
 
 		if (!appointment)
 			throw new ForbiddenException("Appointment is not owned by the User");

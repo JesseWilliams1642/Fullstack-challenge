@@ -9,7 +9,8 @@ import {
 import { AppointmentService } from "./appointment.service";
 import { JwtGuard } from "../../common/guards";
 import { GetAppointmentAvailabilityDTO } from "./dto";
-import { APIResponse } from "src/common/types";
+import { APIResponse, type SafeUser } from "src/common/types";
+import { GetUser } from "src/common/decorators";
 
 @UseGuards(JwtGuard)
 @Controller("api/appointment")
@@ -22,12 +23,14 @@ export class AppointmentController {
 	@HttpCode(HttpStatus.OK)
 	@Get("availability")
 	async getAppointments(
+		@GetUser() user: SafeUser,
 		@Query() dto: GetAppointmentAvailabilityDTO,
 	): Promise<APIResponse<string[]>> {
 		return {
 			data: await this.appointmentService.getAvailabilities(
-				dto.serviceID,
 				new Date(dto.date),
+				user.id,
+				dto.serviceID,
 				dto.staffID,
 				dto.appointmentID ?? null,
 			),

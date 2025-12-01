@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
 import { Between, Repository } from "typeorm";
 
 import { Service } from "../service/service.entity";
@@ -14,14 +19,16 @@ export class AppointmentService {
 		private appointmentRepository: Repository<Appointment>,
 		@Inject("STAFF_REPOSITORY") private staffRepository: Repository<Staff>,
 		@Inject("SERVICE_REPOSITORY") private serviceRepository: Repository<Service>,
+		@Inject("USER_REPOSITORY") private userRepository: Repository<User>,
 	) {}
 
 	// Get a list of available times for a specific service and staff member
 	// for a specific day
 
 	async getAvailabilities(
-		serviceID: string,
 		day: Date,
+		userID: string,
+		serviceID: string,
 		staffID: string,
 		appointmentID: string | null,
 	): Promise<string[]> {
@@ -38,6 +45,12 @@ export class AppointmentService {
 		if (!staff)
 			throw new NotFoundException(`Staff could not be found for id ${staffID}.`);
 
+		const user: User | null = await this.userRepository.findOneBy({
+			id: userID,
+		});
+		if (!user)
+			throw new NotFoundException(`User could not be found for id ${userID}.`);
+
 		// Check if the staff member works on that day
 		let dayOfWeek: number = day.getDay();
 		dayOfWeek = (dayOfWeek - 1) % 7; // Convert from 0-6 Sun-Sat to 0-6 Mon-Sun
@@ -50,147 +63,6 @@ export class AppointmentService {
 		const nextDay: Date = new Date(day);
 		nextDay.setDate(nextDay.getDate() + 1); // Gives us the upper bound for the search
 
-		const staffAppointments: Appointment[] = await this.appointmentRepository
-			.createQueryBuilder("appointment")
-			.leftJoinAndSelect("appointment.service", "service")
-			.where("appointment.staff = :staffID", { staffID: staff.id })
-			.andWhere(
-				"appointment.startTimestamp >= :day AND appointment.startTimestamp <= :nextDay",
-				{
-					day,
-					nextDay,
-				},
-			)
-			.orderBy("appointment.startTimestamp", "ASC")
-			.getMany();
-
-		const staffAppointmentSize: number = staffAppointments.length;
-		let staffAppointmentIndex: number = 0;
-
-		// Get service-related information in milliseconds
-
-		const staffDayStart: number =
-			durationToMilliseconds(staff.startTime) + day.getTime();
-		const staffDayEnd: number =
-			staffDayStart + durationToMilliseconds(staff.shiftDuration);
-
-		const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod);
-
-		const staffBreakStart: number =
-			durationToMilliseconds(staff.breakTime) + day.getTime();
-		const staffBreakEnd: number =
-			staffBreakStart + durationToMilliseconds(staff.breakDuration);
-
-		const possibleValues: Date[] = [];
-		let startTime: number = staffDayStart - 300000; // - 5 minutes
-		const duration: number = durationToMilliseconds(service.serviceDuration);
-
-		while (startTime + duration < staffDayEnd) {
-			startTime = startTime + 300000; // + 5 minutes
-
-			const endTime: number = startTime + duration;
-
-			// Check if we are looking at the appointment we are currently editting
-			// (if we are editting an appointment)
-			// Skip it, so that we can change to appointments previously untouchable due to that
-			// appointment
-			if (
-				appointmentID &&
-				staffAppointmentSize !== staffAppointmentIndex &&
-				staffAppointments[staffAppointmentIndex].id === appointmentID
-			)
-				staffAppointmentIndex = staffAppointmentIndex + 1;
-
-			// Checks for if there are any staff appointments for this day
-			if (
-				staffAppointmentSize > 0 &&
-				staffAppointmentSize !== staffAppointmentIndex
-			) {
-				// Get current appointment information
-				const appointmentStart: number =
-					staffAppointments[staffAppointmentIndex].startTimestamp.getTime();
-				const appointmentEnd: number =
-					appointmentStart +
-					durationToMilliseconds(
-						staffAppointments[staffAppointmentIndex].service.serviceDuration,
-					);
-
-				// Check if the start or end time is inside an appointment (or its buffer bounds)
-				if (
-					startTime >= appointmentStart - staffBuffer &&
-					startTime < appointmentEnd + staffBuffer
-				)
-					continue;
-				if (
-					endTime > appointmentStart - staffBuffer &&
-					endTime <= appointmentEnd + staffBuffer
-				)
-					continue;
-
-				// Goto next appointment for check if we have moved past it
-				if (
-					startTime >= appointmentEnd + staffBuffer &&
-					staffAppointmentIndex + 1 < staffAppointmentSize
-				)
-					staffAppointmentIndex = staffAppointmentIndex + 1;
-			}
-
-			// Check for the break period
-			if (startTime >= staffBreakStart && startTime < staffBreakEnd) continue;
-			if (endTime > staffBreakStart && endTime <= staffBreakEnd) continue;
-
-			possibleValues.push(new Date(startTime));
-		}
-
-		// Return a frontend-readable date string (e.g. 02/11/2000) and time (e.g. 2:30 pm)
-		const timestamps: string[] = [];
-		for (let date of possibleValues) timestamps.push(dateToStrings(date)[1]);
-
-		return timestamps;
-	}
-
-	async checkAppointmentAvailability(
-		startDate: Date,
-		serviceID: string,
-		staffID: string,
-
-		// Needed to remove from the list of appointments we compare with if we doing the check for
-		// editAppointment (as that appointment would) be gone after the edit!
-		oldAppointment?: Appointment,
-	): Promise<boolean> {
-		// Get required data
-		const service: Service | null = await this.serviceRepository.findOneBy({
-			id: serviceID,
-		});
-		if (!service)
-			throw new NotFoundException(`Service could not be found for id ${serviceID}.`);
-
-		const staff: Staff | null = await this.staffRepository.findOneBy({
-			id: staffID,
-		});
-		if (!staff)
-			throw new NotFoundException(`Staff could not be found for id ${staffID}.`);
-
-		// Check if the staff member works on that day
-		let dayOfWeek: number = startDate.getDay();
-		dayOfWeek = (dayOfWeek - 1) % 7; // Convert from 0-6 Sun-Sat to 0-6 Mon-Sun
-
-		if (!staff.daysWorking[dayOfWeek])
-			// If not working that day, return no dates
-			return false;
-
-		// Get only the day part of startDate, and get the next day
-
-		const day = new Date(
-			startDate.getFullYear(),
-			startDate.getMonth(),
-			startDate.getDate(),
-		);
-
-		const nextDay: Date = new Date(day);
-		nextDay.setDate(nextDay.getDate() + 1); // Gives us the upper bound for the search
-
-		// Get staff appointments ordered by soonest appointment to latest
 		let staffAppointments: Appointment[] = await this.appointmentRepository
 			.createQueryBuilder("appointment")
 			.leftJoinAndSelect("appointment.service", "service")
@@ -202,17 +74,9 @@ export class AppointmentService {
 					nextDay,
 				},
 			)
-			.orderBy("appointment.startTimestamp", "ASC")
 			.getMany();
 
-		// Remove the appointment that we are editing from staffAppointments, if it is a part of it
-
-		if (oldAppointment)
-			staffAppointments = staffAppointments.filter(
-				(item) => item.id !== oldAppointment.id,
-			);
-
-		// Get service-related information in milliseconds
+		// Get staff-related information in milliseconds
 
 		const staffDayStart: number =
 			durationToMilliseconds(staff.startTime) + day.getTime();
@@ -226,94 +90,229 @@ export class AppointmentService {
 		const staffBreakEnd: number =
 			staffBreakStart + durationToMilliseconds(staff.breakDuration);
 
-		const startTime: number = startDate.getTime();
-		const duration: number = durationToMilliseconds(service.serviceDuration);
-		const endTime: number = startTime + duration;
+		// Service-related information in milliseconds
+		const serviceDuration: number = durationToMilliseconds(service.serviceDuration);
 
-		// Check if the new appointment is inside the staff's shift
-		if (!(startTime >= staffDayStart && startTime < staffDayEnd)) return false;
-		if (!(endTime > staffDayStart && endTime <= staffDayEnd)) return false;
+		// Get user appointments to check for overlaps
+		let userAppointments: Appointment[] = await this.appointmentRepository
+			.createQueryBuilder("appointment")
+			.leftJoinAndSelect("appointment.service", "service")
+			.where("appointment.user = :userID", { userID: user.id })
+			.andWhere(
+				"appointment.startTimestamp >= :day AND appointment.startTimestamp <= :nextDay",
+				{
+					day,
+					nextDay,
+				},
+			)
+			.getMany();
 
-		// Check if the new appoint is inside the staff's break
-		if (startTime >= staffBreakStart && startTime < staffBreakEnd) return false;
-		if (endTime > staffBreakStart && endTime <= staffBreakEnd) return false;
+		// Remove the to-be-edited appointment ID from the two appointment lists
+		if (appointmentID) {
+			staffAppointments = staffAppointments.filter(
+				(appointment) => appointment.id !== appointmentID,
+			);
+			userAppointments = userAppointments.filter(
+				(appointment) => appointment.id !== appointmentID,
+			);
+		}
 
-		// Check if the new appointment is inside any pre-existing staff appointments (buffer inclusive)
-		for (const appointment of staffAppointments) {
-			// Get current appointment information
+		// Get initial list of possible times
+		let possibleTimes: number[] = [staffDayStart]; // 300000 ms = 5 minutes
+		while (possibleTimes.at(-1)! <= staffDayEnd - 300000 - serviceDuration)
+			possibleTimes.push(possibleTimes.at(-1)! + 300000);
+
+		// Remove conflicting user appointment times (overlaps)
+		for (let appointment of userAppointments) {
 			const appointmentStart: number = appointment.startTimestamp.getTime();
 			const appointmentEnd: number =
 				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
 
-			// Check if the start or end time is inside an appointment (or its buffer bounds)
-			if (
-				startTime >= appointmentStart - staffBuffer &&
-				startTime < appointmentEnd + staffBuffer
-			)
-				return false;
-			if (
-				endTime > appointmentStart - staffBuffer &&
-				endTime <= appointmentEnd + staffBuffer
-			)
-				return false;
+			possibleTimes = possibleTimes.filter((time) => {
+				if (
+					time > appointmentStart - (serviceDuration + staffBuffer) &&
+					time < appointmentEnd + staffBuffer
+				)
+					return false;
+
+				return true;
+			});
 		}
 
-		return true;
-	}
+		// Remove conflicting staff appointment times
+		for (let appointment of staffAppointments) {
+			const appointmentStart: number = appointment.startTimestamp.getTime();
+			const appointmentEnd: number =
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
 
-	async checkAppointmentOverlap(
-		user: User,
-		service: Service,
-		startTime: Date,
-		oldAppointment?: Appointment,
-	): Promise<boolean> {
-		// Get only the day part of startDate, and get the next day
+			possibleTimes = possibleTimes.filter((time) => {
+				if (
+					time > appointmentStart - (serviceDuration + staffBuffer) &&
+					time < appointmentEnd + staffBuffer
+				)
+					return false;
 
-		const day = new Date(
-			startTime.getFullYear(),
-			startTime.getMonth(),
-			startTime.getDate(),
+				return true;
+			});
+		}
+
+		// Remove times conflicting with the break time
+		// Here, I am assuming we merge the break time with the staff buffer
+		possibleTimes = possibleTimes.filter((time) => {
+			if (
+				time > staffBreakStart - serviceDuration &&
+				time < staffBreakEnd + staffBuffer
+			)
+				return false;
+
+			return true;
+		});
+
+		// Convert to time strings and return the array
+		const timestamps: string[] = possibleTimes.map(
+			(time) => dateToStrings(new Date(time))[1],
 		);
 
+		console.log(timestamps);
+
+		return timestamps;
+	}
+
+	// Check for if the addition or changing of an appointment is valid
+	// by checking if its available and if there is personal appointment overlap
+
+	async checkAppointmentAvailability(
+		date: Date,
+		user: User,
+		service: Service,
+		staff: Staff,
+		appointment: Appointment | null,
+	): Promise<boolean> {
+		// Turn Appointment date into the specific day
+		const day: Date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+		// Check if the staff member works on that day
+		let dayOfWeek: number = day.getDay();
+		dayOfWeek = (dayOfWeek - 1) % 7; // Convert from 0-6 Sun-Sat to 0-6 Mon-Sun
+
+		if (!staff.daysWorking[dayOfWeek])
+			// If not working that day, unavailable
+			throw new BadRequestException(
+				"The chosen appointment is not within the chosen staff's operating days.",
+			);
+
+		// Get staff appointments ordered by soonest appointment to latest
 		const nextDay: Date = new Date(day);
 		nextDay.setDate(nextDay.getDate() + 1); // Gives us the upper bound for the search
 
-		// Was needed; service was not transferring over!
-		let preexistingAppointments: Appointment[] =
-			await this.appointmentRepository.find({
-				where: {
-					user: user,
-					startTimestamp: Between(day, nextDay),
+		let staffAppointments: Appointment[] = await this.appointmentRepository
+			.createQueryBuilder("appointment")
+			.leftJoinAndSelect("appointment.service", "service")
+			.where("appointment.staff = :staffID", { staffID: staff.id })
+			.andWhere(
+				"appointment.startTimestamp >= :day AND appointment.startTimestamp <= :nextDay",
+				{
+					day,
+					nextDay,
 				},
-				relations: ["service"],
-			});
+			)
+			.getMany();
 
-		// Remove old appointment from the comparison list if we are updating oldAppointment --> newAppointment
+		// Get staff-related information in milliseconds
 
-		if (oldAppointment)
-			preexistingAppointments = preexistingAppointments.filter(
-				(item) => item.id !== oldAppointment.id,
+		const staffDayStart: number =
+			durationToMilliseconds(staff.startTime) + day.getTime();
+		const staffDayEnd: number =
+			staffDayStart + durationToMilliseconds(staff.shiftDuration);
+
+		const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod);
+
+		const staffBreakStart: number =
+			durationToMilliseconds(staff.breakTime) + day.getTime();
+		const staffBreakEnd: number =
+			staffBreakStart + durationToMilliseconds(staff.breakDuration);
+
+		// Service-related information in milliseconds
+		const serviceDuration: number = durationToMilliseconds(service.serviceDuration);
+
+		// Specific appointment start/end time
+		const chosenAppointmentStart: number = date.getTime();
+		const chosenAppointmentEnd: number = chosenAppointmentStart + serviceDuration;
+
+		// Get user appointments to check for overlaps
+		let userAppointments: Appointment[] = await this.appointmentRepository
+			.createQueryBuilder("appointment")
+			.leftJoinAndSelect("appointment.service", "service")
+			.where("appointment.user = :userID", { userID: user.id })
+			.andWhere(
+				"appointment.startTimestamp >= :day AND appointment.startTimestamp <= :nextDay",
+				{
+					day,
+					nextDay,
+				},
+			)
+			.getMany();
+
+		// Remove the to-be-edited appointment ID from the two appointment lists
+		if (appointment) {
+			staffAppointments = staffAppointments.filter(
+				(staffAppointment) => staffAppointment.id !== appointment.id,
 			);
-
-		// Calculate start and end times in milliseconds
-
-		const startTimeMs: number = startTime.getTime();
-		const duration: number = durationToMilliseconds(service.serviceDuration);
-		const endTimeMs: number = startTimeMs + duration;
-
-		for (const appointment of preexistingAppointments) {
-			const preeexistingStartTime: number = appointment.startTimestamp.getTime();
-			const preexistingDuration: number = durationToMilliseconds(
-				appointment.service.serviceDuration,
+			userAppointments = userAppointments.filter(
+				(userAppointment) => userAppointment.id !== appointment.id,
 			);
-			const preexistingEndtime: number = preeexistingStartTime + preexistingDuration;
-
-			if (startTimeMs >= preeexistingStartTime && startTimeMs < preexistingEndtime)
-				return true;
-			if (endTimeMs > preeexistingStartTime && endTimeMs <= preexistingEndtime)
-				return true;
 		}
 
-		return false;
+		// Check that it is within operating hours
+		if (
+			!(
+				chosenAppointmentStart >= staffDayStart && chosenAppointmentEnd <= staffDayEnd
+			)
+		)
+			throw new BadRequestException(
+				"The chosen appointment is not within the chosen staff's operating hours.",
+			);
+
+		// Check for conflicting user appointment times (overlaps)
+		for (let appointment of userAppointments) {
+			const appointmentStart: number = appointment.startTimestamp.getTime();
+			const appointmentEnd: number =
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
+
+			if (
+				chosenAppointmentStart > appointmentStart - (serviceDuration + staffBuffer) &&
+				chosenAppointmentStart < appointmentEnd + staffBuffer
+			)
+				throw new BadRequestException(
+					"The chosen appointment overlaps with one of the user's existing appointments.",
+				);
+		}
+
+		// Check for conflicting staff appointment times
+		for (let appointment of staffAppointments) {
+			const appointmentStart: number = appointment.startTimestamp.getTime();
+			const appointmentEnd: number =
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
+
+			if (
+				chosenAppointmentStart > appointmentStart - (serviceDuration + staffBuffer) &&
+				chosenAppointmentStart < appointmentEnd + staffBuffer
+			)
+				throw new BadRequestException(
+					"The chosen appointment conflicts with one of the staff's existing appointments.",
+				);
+		}
+
+		// Check for times conflicting with the break time
+		// Here, I am assuming we merge the break time with the staff buffer
+		if (
+			chosenAppointmentStart > staffBreakStart - serviceDuration &&
+			chosenAppointmentStart < staffBreakEnd + staffBuffer
+		)
+			throw new BadRequestException(
+				"The chosen appointment conflicts with the staff's break time.",
+			);
+
+		return true;
 	}
 }
