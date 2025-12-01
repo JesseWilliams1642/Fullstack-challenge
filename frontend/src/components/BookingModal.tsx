@@ -6,6 +6,9 @@ import {
 	UserOutlined,
 	CalendarOutlined,
 } from "@ant-design/icons";
+import { Button, Select, DatePicker, Modal } from "antd";
+import dayjs from "dayjs";
+
 import { useAuth } from "../hooks/useAuth";
 import { getServices } from "../api/serviceAPI";
 import type { GetStaffDTO } from "../dtos/staff";
@@ -17,6 +20,8 @@ import type { APIResponse } from "../types/apiResponse";
 import { createAppointment, editAppointment } from "../api/userAPI";
 import { showError } from "../lib/showError";
 import { durationToMinutes } from "../lib/date-to-minutes";
+
+const { Option } = Select;
 
 interface BookingModalProps {
 	appointment?: SafeAppointment | null;
@@ -57,67 +62,58 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 		}
 	}, [selectedDate, selectedStaff, selectedService]);
 
-	// For getting the correct date and time values
 	useEffect(() => {
 		if (appointment && checkEdit) {
 			setCheckEdit(false);
 
-			// Convert the time to ISO 8601 standard
-			const separatedDate: string[] = appointment.dateString.split("/");
-			if (separatedDate.length === 3) {
-				const isoDate: string =
-					separatedDate[2] + "-" + separatedDate[1] + "-" + separatedDate[0];
+			const split = appointment.dateString.split("/");
+			if (split.length === 3) {
+				const iso = `${split[2]}-${split[1]}-${split[0]}`;
+				setSelectedDate(iso);
 				setSelectedTime(appointment.timeString);
-				setSelectedDate(isoDate);
-			} else
-				setError(
-					"Error: Appointment date did not convert correctly. Please submit this bug to a system administrator.",
-				);
+			} else {
+				setError("Error converting appointment date.");
+			}
 		}
 	});
 
 	const loadServices = async () => {
 		try {
-			const { data, error: serviceError } = await getServices();
-
-			if (serviceError) showError(serviceError);
+			const { data, error } = await getServices();
+			if (error) showError(error);
 			else setServices(data || []);
-		} catch (serviceError) {
-			showError(serviceError);
+		} catch (err) {
+			showError(err);
 		}
 	};
 
 	const loadStaff = async () => {
 		try {
-			const { data, error: staffError } = await getStaff();
-
-			if (staffError) showError(staffError);
+			const { data, error } = await getStaff();
+			if (error) showError(error);
 			else setStaff(data || []);
-		} catch (staffError) {
-			showError(staffError);
+		} catch (err) {
+			showError(err);
 		}
 	};
 
 	const generateTimeSlots = async () => {
 		try {
-			const { data: slots, error: timeSlotError } = await getAppointmentAvailability({
+			const { data, error } = await getAppointmentAvailability({
 				serviceID: selectedService,
 				date: selectedDate,
 				staffID: selectedStaff,
 				appointmentID: appointment?.id ?? "",
 			});
 
-			const processedSlots: string[] = slots ?? [];
-
-			if (timeSlotError) showError(timeSlotError);
+			const slots = data ?? [];
+			if (error) showError(error);
 			else {
-				setTimeSlots(processedSlots);
-				if (processedSlots.length === 0)
-					setError("No available appointments for these selections.");
-				else setError("");
+				setTimeSlots(slots);
+				setError(slots.length === 0 ? "No available appointments." : "");
 			}
-		} catch (timeSlotError) {
-			showError(timeSlotError);
+		} catch (err) {
+			showError(err);
 		}
 	};
 
@@ -130,199 +126,228 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			!selectedDate ||
 			!selectedTime
 		) {
-			setError("Please fill in all required fields");
+			setError("Please fill all required fields.");
 			return;
 		}
+
 		setLoading(true);
 		setError("");
 
 		try {
-			const [combinedTime, suffix]: string[] = selectedTime.split(" ");
+			const [combinedTime, suffix] = selectedTime.split(" ");
 			const [hours, minutes] = combinedTime.split(":");
+			const adjustedHours = Number(hours) + (suffix === "AM" ? 0 : 12);
+			const hh = adjustedHours < 10 ? `0${adjustedHours}` : adjustedHours;
 
-			const addedHours: number = suffix === "AM" ? 0 : 12;
-			let totalHours: number = Number(hours) + addedHours;
-			const stringHours: string =
-				totalHours < 10 ? "0" + totalHours.toString() : totalHours.toString();
-
-			const startDateString: string =
-				selectedDate + "T" + stringHours + ":" + minutes + ":00Z";
+			const startDateString = `${selectedDate}T${hh}:${minutes}:00Z`;
 
 			let result: APIResponse<SafeAppointment>;
-			if (appointment)
+			if (appointment) {
 				result = await editAppointment({
 					appointmentID: appointment.id,
 					serviceID: selectedService,
 					staffID: selectedStaff,
 					startDate: startDateString,
 				});
-			else
+			} else {
 				result = await createAppointment({
 					serviceID: selectedService,
 					staffID: selectedStaff,
 					startDate: startDateString,
 				});
+			}
 
-			if (result.error)
-				if (typeof result.error.message === "string") setError(result.error.message);
-				else showError(result.error);
-			else onSuccess();
-		} catch (error: any) {
-			if (error?.response?.data?.error?.message?.message)
-				setError(error.response.data.error.message.message);
-			else if (error?.response?.data?.error?.message)
-				setError(error.response.data.error.message);
-			else showError(error);
+			if (result.error) {
+				setError(
+					typeof result.error.message === "string"
+						? result.error.message
+						: "Error occurred.",
+				);
+			} else onSuccess();
+		} catch (err: any) {
+			showError(err);
 		}
 
 		setLoading(false);
 	};
 
 	const getTomorrowDate = () => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		return tomorrow.toISOString().split("T")[0];
+		const t = new Date();
+		t.setDate(t.getDate() + 1);
+		return t.toISOString().split("T")[0];
 	};
 
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-			<div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-				<div className="flex items-center justify-between p-6 border-b border-gray-200">
-					<h2 className="text-2xl font-bold text-gray-900">
+		<Modal
+			open={true}
+			onCancel={onClose}
+			footer={null}
+			centered
+			width={700}
+			title={
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+					}}
+				>
+					<span style={{ fontSize: 20, fontWeight: 700 }}>
 						{appointment ? "Edit Appointment" : "Book New Appointment"}
-					</h2>
-					<button
+					</span>
+					<Button
+						shape="circle"
+						icon={<CloseOutlined style={{ color: "#808080" }} />}
 						onClick={onClose}
-						className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+					/>
+				</div>
+			}
+			closeIcon={null}
+		>
+			<form
+				onSubmit={handleSubmit}
+				style={{ display: "flex", flexDirection: "column", gap: 24 }}
+			>
+				{error && (
+					<div
+						style={{
+							padding: 12,
+							backgroundColor: "#ffe6e6",
+							border: "1px solid #ffb3b3",
+							borderRadius: 6,
+							color: "#cc0000",
+							fontSize: 14,
+							marginTop: "6px",
+						}}
 					>
-						<CloseOutlined style={{ fontSize: "18px", color: "#99A1AF" }} />
-					</button>
+						{error}
+					</div>
+				)}
+
+				{/* Service */}
+				<div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 16 }}>
+					<label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>
+						<ScissorOutlined style={{ marginRight: 6 }} />
+						Service
+					</label>
+					<Select
+						value={selectedService}
+						onChange={(val) => setSelectedService(val)}
+						placeholder="Select a service"
+						style={{ width: "100%" }}
+					>
+						{services.map((s) => (
+							<Option
+								key={s.id}
+								value={s.id}
+							>
+								{s.serviceName} ({durationToMinutes(s.serviceDuration)} min)
+							</Option>
+						))}
+					</Select>
 				</div>
 
-				<form
-					onSubmit={handleSubmit}
-					className="p-6 space-y-6"
+				{/* Staff */}
+				<div>
+					<label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>
+						<UserOutlined style={{ marginRight: 6 }} />
+						Stylist
+					</label>
+					<Select
+						value={selectedStaff}
+						onChange={(val) => setSelectedStaff(val)}
+						placeholder="Select a stylist"
+						style={{ width: "100%" }}
+					>
+						{staff.map((m) => (
+							<Option
+								key={m.id}
+								value={m.id}
+							>
+								{m.name}
+							</Option>
+						))}
+					</Select>
+				</div>
+
+				{/* Date */}
+				<div>
+					<label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>
+						<CalendarOutlined style={{ marginRight: 6 }} />
+						Date
+					</label>
+					<DatePicker
+						style={{ width: "100%" }}
+						value={selectedDate ? dayjs(selectedDate) : null}
+						onChange={(d) => setSelectedDate(d?.format("YYYY-MM-DD") || "")}
+						disabledDate={(current) => current && current < dayjs(getTomorrowDate())}
+					/>
+				</div>
+
+				{/* Time Slots */}
+				{timeSlots.length > 0 && (
+					<div>
+						<label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>
+							<ClockCircleOutlined style={{ marginRight: 6 }} />
+							Available Times
+						</label>
+
+						<div
+							style={{
+								display: "grid",
+								gridTemplateColumns: "repeat(4, 1fr)",
+								gap: 8,
+								maxHeight: 130,
+								overflowY: "auto",
+							}}
+						>
+							{timeSlots.map((slot) => (
+								<Button
+									key={slot}
+									type={selectedTime === slot ? "primary" : "default"}
+									onClick={() => setSelectedTime(slot)}
+									style={{
+										backgroundColor: selectedTime === slot ? "#eb9090ff" : "#be123c",
+										borderColor: "#be123c",
+										color: "white",
+									}}
+								>
+									{slot}
+								</Button>
+							))}
+						</div>
+					</div>
+				)}
+
+				{/* Footer */}
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "flex-end",
+						gap: 12,
+						borderTop: "1px solid #e5e7eb",
+						paddingTop: 16,
+					}}
 				>
-					{error && (
-						<div className="bg-red-50 border border-red-200 rounded-md p-4">
-							<p className="text-red-600 text-sm">{error}</p>
-						</div>
-					)}
+					<Button onClick={onClose}>Cancel</Button>
 
-					{/* Service Selection */}
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							<ScissorOutlined className="inline mr-2" />
-							Service
-						</label>
-						<select
-							value={selectedService}
-							onChange={(e) => setSelectedService(e.target.value)}
-							required
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-						>
-							<option value="">Select a service</option>
-							{services.map((service) => (
-								<option
-									key={service.id}
-									value={service.id}
-								>
-									{service.serviceName} - ({durationToMinutes(service.serviceDuration)} min)
-								</option>
-							))}
-						</select>
-					</div>
-
-					{/* Staff Selection */}
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							<UserOutlined className="inline mr-2" />
-							Stylist
-						</label>
-						<select
-							value={selectedStaff}
-							onChange={(e) => setSelectedStaff(e.target.value)}
-							required
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-						>
-							<option value="">Select a stylist</option>
-							{staff.map((member) => (
-								<option
-									key={member.id}
-									value={member.id}
-								>
-									{member.name}
-								</option>
-							))}
-						</select>
-					</div>
-
-					{/* Date Selection */}
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							<CalendarOutlined className="inline mr-2" />
-							Date
-						</label>
-						<input
-							type="date"
-							value={selectedDate}
-							onChange={(e) => setSelectedDate(e.target.value)}
-							min={getTomorrowDate()}
-							required
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-						/>
-					</div>
-
-					{/* Time Selection */}
-					{timeSlots.length > 0 && (
-						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-2">
-								<ClockCircleOutlined className="inline mr-2" />
-								Available Times
-							</label>
-							<div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-								{timeSlots.map((slot) => (
-									<button
-										key={slot}
-										type="button"
-										disabled={false}
-										onClick={() => setSelectedTime(slot)}
-										className={
-											selectedTime === slot
-												? `px-3 py-2 text-sm rounded-md border transition-colors bg-rose-300 text-black border-rose-600`
-												: `px-3 py-2 text-sm rounded-md border transition-colors bg-rose-600 text-white border-rose-600`
-										}
-									>
-										{slot}
-									</button>
-								))}
-							</div>
-						</div>
-					)}
-
-					{/* Submit Button */}
-					<div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-						<button
-							type="button"
-							onClick={onClose}
-							className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 font-medium transition-colors"
-						>
-							Cancel
-						</button>
-						<button
-							type="submit"
-							disabled={loading}
-							className="px-6 py-2 bg-gradient-to-r from-rose-600 to-purple-600 text-white rounded-md font-medium hover:from-rose-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{loading
-								? "Saving..."
-								: appointment
-								? "Update Appointment"
-								: "Book Appointment"}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
+					<Button
+						type="primary"
+						htmlType="submit"
+						loading={loading}
+						style={{
+							background: "linear-gradient(to right, #f43f5e, #7e22ce)",
+							border: "none",
+						}}
+					>
+						{loading
+							? "Saving..."
+							: appointment
+							? "Update Appointment"
+							: "Book Appointment"}
+					</Button>
+				</div>
+			</form>
+		</Modal>
 	);
 };
