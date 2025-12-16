@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Image, Card, Button } from "antd";
+import { Image, Card, Button, App } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import type { GetServiceDTO } from "../dtos/service";
 import { getHomeServices } from "../api/homeAPI";
@@ -8,6 +8,7 @@ import { showError } from "../lib/showError";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
 
 export const HomePage: React.FC = () => {
+	const { message } = App.useApp();
 	const navigate: NavigateFunction = useNavigate();
 	const [services, setServices] = useState<GetServiceDTO[]>([]);
 
@@ -18,7 +19,7 @@ export const HomePage: React.FC = () => {
 	const loadServices = async () => {
 		const { data, error } = await getHomeServices();
 
-		if (error) showError(error);
+		if (error) showError(error, message);
 		else setServices(data || []);
 	};
 

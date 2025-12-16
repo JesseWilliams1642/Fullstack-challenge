@@ -6,7 +6,7 @@ import {
 	UserOutlined,
 	CalendarOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Modal } from "antd";
+import { Button, Select, DatePicker, Modal, App } from "antd";
 import dayjs from "dayjs";
 
 import { useAuth } from "../hooks/useAuth";
@@ -34,6 +34,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	onClose,
 	onSuccess,
 }) => {
+	const { message } = App.useApp();
+
 	const { user } = useAuth();
 	const [services, setServices] = useState<GetServiceDTO[]>([]);
 	const [staff, setStaff] = useState<GetStaffDTO[]>([]);
@@ -80,20 +82,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 	const loadServices = async () => {
 		try {
 			const { data, error } = await getServices();
-			if (error) showError(error);
+			if (error) showError(error, message);
 			else setServices(data || []);
 		} catch (err) {
-			showError(err);
+			showError(err, message);
 		}
 	};
 
 	const loadStaff = async () => {
 		try {
 			const { data, error } = await getStaff();
-			if (error) showError(error);
+			if (error) showError(error, message);
 			else setStaff(data || []);
 		} catch (err) {
-			showError(err);
+			showError(err, message);
 		}
 	};
 
@@ -107,13 +109,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 			});
 
 			const slots = data ?? [];
-			if (error) showError(error);
+			if (error) showError(error, message);
 			else {
 				setTimeSlots(slots);
 				setError(slots.length === 0 ? "No available appointments." : "");
 			}
 		} catch (err) {
-			showError(err);
+			showError(err, message);
 		}
 	};
 
@@ -165,7 +167,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 				);
 			} else onSuccess();
 		} catch (err: any) {
-			showError(err);
+			showError(err, message);
 		}
 
 		setLoading(false);

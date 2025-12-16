@@ -4,7 +4,7 @@ import {
 	UserOutlined,
 	LogoutOutlined,
 } from "@ant-design/icons";
-import { Button } from "antd";
+import { App, Button } from "antd";
 import { useAuth } from "../hooks/useAuth";
 import { logout } from "../api/authAPI";
 import { showError } from "../lib/showError";
@@ -17,6 +17,7 @@ import {
 
 export const Header: React.FC = () => {
 	const { user, userLoaded: _, setUser } = useAuth();
+	const { message } = App.useApp();
 	const navigate: NavigateFunction = useNavigate();
 	const location: Location = useLocation();
 	const currentPage: string = location.pathname;
@@ -27,7 +28,7 @@ export const Header: React.FC = () => {
 			setUser(null);
 			navigate("/");
 		} catch (error) {
-			showError(error);
+			showError(error, message);
 		}
 	};
 

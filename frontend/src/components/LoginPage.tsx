@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	ScissorOutlined,
 	EyeOutlined,
@@ -6,7 +6,7 @@ import {
 	MailOutlined,
 	LockOutlined,
 } from "@ant-design/icons";
-import { Input, Button } from "antd";
+import { Input, Button, App } from "antd";
 import { login } from "../api/authAPI";
 import { showError } from "../lib/showError";
 import { useAuth } from "../hooks/useAuth";
@@ -18,17 +18,15 @@ import {
 } from "react-router-dom";
 
 export const LoginPage: React.FC = () => {
+	const { message } = App.useApp(); 
 	const location: Location = useLocation();
-	const registerSuccess: boolean = location.state?.registerSuccess ?? false;
+	const navigate: NavigateFunction = useNavigate();
 
 	const { refetchUser } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
-	const [justRegistered, setRegistered] = useState(registerSuccess);
-
-	const navigate: NavigateFunction = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -36,28 +34,36 @@ export const LoginPage: React.FC = () => {
 
 		setLoading(true);
 		setError("");
-		setRegistered(false);
 
 		try {
 			const { data: _, error } = await login({ email, password });
 
 			if (error)
 				if (typeof error.message === "string") setError(error.message);
-				else showError(error);
+				else showError(error, message);
 			else {
 				await refetchUser(); // Get new User now that we are logged in
 				navigate("/profile");
 			}
 		} catch (error: any) {
-			if (error?.response?.data?.error?.message?.message)
-				setError(error.response.data.error.message.message);
-			else if (error?.response?.data?.error?.message)
-				setError(error.response.data.error.message);
-			else showError(error);
+			showError(error, message);
 		}
 
 		setLoading(false);
 	};
+
+	useEffect(() => {
+	
+		if (!location.state?.registerSuccess) return;
+		// StrictMode running this twice is killing me
+		message.success({
+			content: 'Account has been registered successfully.',
+			duration: 10
+		});
+
+		navigate('/login', { replace: true });	// Stops you from refreshing and getting the same msg
+		
+	}, [navigate, location.state]);
 
 	return (
 		<div
@@ -213,21 +219,6 @@ export const LoginPage: React.FC = () => {
 						</div>
 					</form>
 				</div>
-
-				{/* Registration success message */}
-				{justRegistered && (
-					<div
-						style={{
-							color: "#059669",
-							fontWeight: 500,
-							fontSize: "0.875rem",
-							textAlign: "center",
-							marginTop: "16px",
-						}}
-					>
-						Account registered successfully
-					</div>
-				)}
 			</div>
 		</div>
 	);

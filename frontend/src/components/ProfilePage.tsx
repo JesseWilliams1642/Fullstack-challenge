@@ -7,7 +7,7 @@ import {
 	ClockCircleOutlined,
 	CreditCardOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Spin, Badge } from "antd";
+import { Button, Card, Spin, Badge, App } from "antd";
 import { type SafeAppointment } from "../types/safeAppointment";
 import { BookingModal } from "./BookingModal";
 import { useAuth } from "../hooks/useAuth";
@@ -23,6 +23,7 @@ export const ProfilePage: React.FC = () => {
 	const [editingAppointment, setEditingAppointment] =
 		useState<SafeAppointment | null>(null);
 
+	const { message } = App.useApp();
 	const navigate: NavigateFunction = useNavigate();
 
 	useEffect(() => {
@@ -37,10 +38,10 @@ export const ProfilePage: React.FC = () => {
 
 		try {
 			const { data, error } = await getAppointments();
-			if (error) showError(error);
+			if (error) showError(error, message);
 			else setAppointments(data || []);
 		} catch (error) {
-			showError(error);
+			showError(error, message);
 		}
 
 		setLoading(false);
@@ -51,10 +52,10 @@ export const ProfilePage: React.FC = () => {
 
 		try {
 			const { data: _, error } = await deleteAppointment(appointmentId);
-			if (error) showError(error);
+			if (error) showError(error, message);
 			else loadAppointments();
 		} catch (error) {
-			showError(error);
+			showError(error, message);
 		}
 	};
 

@@ -7,7 +7,7 @@ import {
 	LockOutlined,
 	UserOutlined,
 } from "@ant-design/icons";
-import { Input, Button } from "antd";
+import { Input, Button, App } from "antd";
 import { register } from "../api/authAPI";
 import { showError } from "../lib/showError";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
@@ -20,6 +20,7 @@ export const RegisterPage: React.FC = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
+	const { message } = App.useApp();
 	const navigate: NavigateFunction = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -48,17 +49,13 @@ export const RegisterPage: React.FC = () => {
 
 			if (serverError) {
 				if (typeof serverError.message === "string") setError(serverError.message);
-				else showError(serverError);
+				else showError(serverError, message);
 			} else
 				navigate("/login", {
 					state: { registerSuccess: true },
 				});
 		} catch (err: any) {
-			if (err?.response?.data?.error?.message?.message)
-				setError(err.response.data.error.message.message);
-			else if (err?.response?.data?.error?.message)
-				setError(err.response.data.error.message);
-			else showError(err);
+			showError(err, message);
 		}
 
 		setLoading(false);
