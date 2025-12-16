@@ -4,7 +4,7 @@ import {
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
-import { Between, Repository } from "typeorm";
+import { Repository } from "typeorm";
 
 import { Service } from "../service/service.entity";
 import { Staff } from "../staff/staff.entity";
@@ -172,8 +172,6 @@ export class AppointmentService {
 		const timestamps: string[] = possibleTimes.map(
 			(time) => dateToStrings(new Date(time))[1],
 		);
-
-		console.log(timestamps);
 
 		return timestamps;
 	}

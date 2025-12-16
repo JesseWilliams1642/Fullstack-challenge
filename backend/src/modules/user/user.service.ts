@@ -203,13 +203,11 @@ export class UserService {
 			throw new BadRequestException("User does not contain any appointments.");
 
 		let appointment: Appointment | null = null;
-		for (const _appointment of user.appointments) {
-			console.log("APPOINTMENTS:");
-			console.log(`Appoinment Delete ID: ${appointmentID}`);
-			console.log(`Appointment Loop ID: ${_appointment.id}`);
-
-			if (_appointment.id === appointmentID) appointment = _appointment;
-		}
+		for (const _appointment of user.appointments) 
+			if (_appointment.id === appointmentID)  {
+				appointment = _appointment;
+				break;
+			}
 
 		if (!appointment)
 			throw new ForbiddenException("Appointment is not owned by the User");
