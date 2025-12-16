@@ -32,6 +32,6 @@ export function showError(error: any, message: MessageInstance) {
 
 	message.error({
 		content: alertMessage,
-		duration: 20
+		duration: 10
 	});
 }

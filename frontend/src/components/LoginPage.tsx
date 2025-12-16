@@ -58,7 +58,7 @@ export const LoginPage: React.FC = () => {
 		// StrictMode running this twice is killing me
 		message.success({
 			content: 'Account has been registered successfully.',
-			duration: 10
+			duration: 5
 		});
 
 		navigate('/login', { replace: true });	// Stops you from refreshing and getting the same msg
