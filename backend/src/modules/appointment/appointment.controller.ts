@@ -9,8 +9,8 @@ import {
 import { AppointmentService } from "./appointment.service";
 import { JwtGuard } from "../../common/guards";
 import { GetAppointmentAvailabilityDTO } from "./dto";
-import { APIResponse, type SafeUser } from "src/common/types";
-import { GetUser } from "src/common/decorators";
+import { APIResponse, type SafeUser } from "../../common/types";
+import { GetUser } from "../../common/decorators";
 
 @UseGuards(JwtGuard)
 @Controller("api/appointment")

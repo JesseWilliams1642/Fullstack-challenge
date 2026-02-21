@@ -55,7 +55,7 @@ export class AuthController {
 		const createdUser = await this.authService.createUser(
 			dto.email,
 			dto.password,
-			dto.name
+			dto.name,
 		);
 		return { data: createdUser, error: null };
 	}
@@ -65,15 +65,12 @@ export class AuthController {
 	@UseGuards(JwtGuard)
 	@HttpCode(HttpStatus.OK)
 	@Get("me")
-	async getUser(
-		@GetUser() user: SafeUser
-	): Promise<APIResponse<SafeUser>> {
+	async getUser(@GetUser() user: SafeUser): Promise<APIResponse<SafeUser>> {
 		const safeUser: SafeUser = {
 			email: user.email,
 			id: user.id,
-			name: user.name
+			name: user.name,
 		};
 		return { data: safeUser, error: null };
 	}
-
 }

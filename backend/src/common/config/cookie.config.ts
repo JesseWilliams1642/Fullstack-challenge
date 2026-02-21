@@ -1,6 +1,6 @@
 import { CookieConfig } from "../types";
 
-// Cookie security configse
+// Cookie security configs
 
 export const cookieConfig: CookieConfig = {
 	httpOnly: true,

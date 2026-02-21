@@ -203,8 +203,8 @@ export class UserService {
 			throw new BadRequestException("User does not contain any appointments.");
 
 		let appointment: Appointment | null = null;
-		for (const _appointment of user.appointments) 
-			if (_appointment.id === appointmentID)  {
+		for (const _appointment of user.appointments)
+			if (_appointment.id === appointmentID) {
 				appointment = _appointment;
 				break;
 			}
@@ -239,5 +239,23 @@ export class UserService {
 
 		// Remove appointment
 		await this.appointmentRepository.delete(appointment);
+	}
+
+	async deleteAccount(email: string): Promise<void> {
+		// Get user and to-be-deleted appointment
+		const user: User | null = await this.userRepository.findOne({
+			where: { email: email },
+			relations: ["appointments", "appointments.staff"],
+		});
+		if (!user)
+			throw new NotFoundException(`User could not be found for email ${email}.`);
+
+		// Remove appointments
+		if (user.appointments && user.appointments.length > 0) {
+			await this.appointmentRepository.delete(user.appointments);
+		}
+
+		// Delete user
+		await this.userRepository.delete({ id: user.id });
 	}
 }
