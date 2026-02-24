@@ -162,21 +162,8 @@ export class UserController {
 	// Delete your account (required only for testing purposes)
 	@HttpCode(HttpStatus.OK)
 	@Delete("account")
-	async deleteAccount(
-		@GetUser() user: SafeUser,
-		@Req() req: Request,
-	): Promise<APIResponse<string>> {
-		if (user.email === req.user?.email) {
-			await this.userService.deleteAccount(user.email);
-			return { data: "Account deleted successfully.", error: null };
-		} else
-			return {
-				data: null,
-				error: {
-					message: "You are not authorised to delete this account.",
-					statusCode: HttpStatus.FORBIDDEN,
-					timestamp: new Date().toISOString(),
-				},
-			};
+	async deleteAccount(@GetUser() user: SafeUser): Promise<APIResponse<string>> {
+		await this.userService.deleteAccount(user.email);
+		return { data: "Account deleted successfully.", error: null };
 	}
 }
