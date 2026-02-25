@@ -8,7 +8,7 @@ export class AppService {
 
 	// Retrieve all services and return them
 
-	async getService(): Promise<GetServiceDTO[]> {
+	async getServices(): Promise<GetServiceDTO[]> {
 		return await this.serviceService.getServices();
 	}
 }

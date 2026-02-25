@@ -1,11 +1,14 @@
+// getServices()
+// healthCheck()
 import { Test, TestingModule } from "@nestjs/testing";
-import { ServiceController } from "../service.controller";
-import { ServiceService } from "../service.service";
-import { GetServiceDTO } from "../dto";
+import { GetServiceDTO } from "./modules/service/dto";
+import { AppService } from "./app.service";
+import { AppController } from "./app.controller";
+import { HealthResponse } from "./common/types";
 
-describe("ServiceController", () => {
-	let controller: ServiceController;
-	let mockServiceService: jest.Mocked<ServiceService>;
+describe("AppController", () => {
+	let controller: AppController;
+	let mockAppService: jest.Mocked<AppService>;
 
 	// Test data
 	const mockService: GetServiceDTO = {
@@ -25,21 +28,21 @@ describe("ServiceController", () => {
 	};
 
 	beforeEach(async () => {
-		// Must be cast as jest.Mocked<ServiceService> to satisfy TypeScript type checking for mocked methods
+		// Must be cast as jest.Mocked<AppService> to satisfy TypeScript type checking for mocked methods
 		// Can't set as a partial mock else TypeScript will throw errors about missing methods when we try to mock getServices()
-		mockServiceService = {
+		mockAppService = {
 			getServices: jest.fn(),
-		} as unknown as jest.Mocked<ServiceService>;
+		} as unknown as jest.Mocked<AppService>;
 
 		const module: TestingModule = await Test.createTestingModule({
-			controllers: [ServiceController],
-			providers: [ServiceService],
+			controllers: [AppController],
+			providers: [AppService],
 		})
-			.overrideProvider(ServiceService)
-			.useValue(mockServiceService)
+			.overrideProvider(AppService)
+			.useValue(mockAppService)
 			.compile();
 
-		controller = module.get<ServiceController>(ServiceController);
+		controller = module.get<AppController>(AppController);
 	});
 
 	afterEach(() => {
@@ -49,7 +52,7 @@ describe("ServiceController", () => {
 	describe("getServices", () => {
 		it("should return all services with successful response", async () => {
 			const mockServices = [mockService, mockService2];
-			mockServiceService.getServices.mockResolvedValue(mockServices);
+			mockAppService.getServices.mockResolvedValue(mockServices);
 
 			const result = await controller.getServices();
 
@@ -57,12 +60,12 @@ describe("ServiceController", () => {
 				data: mockServices,
 				error: null,
 			});
-			expect(mockServiceService.getServices).toHaveBeenCalledTimes(1);
+			expect(mockAppService.getServices).toHaveBeenCalledTimes(1);
 			expect(result.data).toHaveLength(2);
 		});
 
 		it("should return empty array when no services exist", async () => {
-			mockServiceService.getServices.mockResolvedValue([]);
+			mockAppService.getServices.mockResolvedValue([]);
 
 			const result = await controller.getServices();
 
@@ -70,21 +73,21 @@ describe("ServiceController", () => {
 				data: [],
 				error: null,
 			});
-			expect(mockServiceService.getServices).toHaveBeenCalledTimes(1);
+			expect(mockAppService.getServices).toHaveBeenCalledTimes(1);
 		});
 
 		it("should return error response when getServices throws exception", async () => {
 			const error = new Error("Database connection failed");
-			mockServiceService.getServices.mockRejectedValue(error);
+			mockAppService.getServices.mockRejectedValue(error);
 
 			await expect(controller.getServices()).rejects.toThrow(
 				"Database connection failed",
 			);
-			expect(mockServiceService.getServices).toHaveBeenCalledTimes(1);
+			expect(mockAppService.getServices).toHaveBeenCalledTimes(1);
 		});
 
 		it("should validate response data structure", async () => {
-			mockServiceService.getServices.mockResolvedValue([mockService]);
+			mockAppService.getServices.mockResolvedValue([mockService]);
 
 			const result = await controller.getServices();
 			const service = result.data![0];
@@ -100,6 +103,16 @@ describe("ServiceController", () => {
 			expect(typeof service.serviceDuration).toBe("string");
 			expect(typeof service.serviceDescription).toBe("string");
 			expect(typeof service.serviceImage).toBe("string");
+		});
+	});
+
+	describe("healthCheck", () => {
+		it("should return an ok response", async () => {
+			const result: HealthResponse = await controller.healthCheck();
+
+			expect(result).toEqual({
+				status: "ok",
+			});
 		});
 	});
 });
