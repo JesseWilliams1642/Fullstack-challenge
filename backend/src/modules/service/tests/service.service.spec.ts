@@ -80,9 +80,7 @@ describe("ServiceService", () => {
 			const error = new Error("Database connection failed");
 			mockServiceRepository.find.mockRejectedValue(error);
 
-			await expect(service.getServices()).rejects.toThrow(
-				"Database connection failed",
-			);
+			await expect(service.getServices()).rejects.toThrow(error);
 			expect(mockServiceRepository.find).toHaveBeenCalledTimes(1);
 		});
 

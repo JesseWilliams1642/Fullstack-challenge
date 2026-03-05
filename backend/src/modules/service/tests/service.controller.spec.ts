@@ -77,9 +77,7 @@ describe("ServiceController", () => {
 			const error = new Error("Database connection failed");
 			mockServiceService.getServices.mockRejectedValue(error);
 
-			await expect(controller.getServices()).rejects.toThrow(
-				"Database connection failed",
-			);
+			await expect(controller.getServices()).rejects.toThrow(error);
 			expect(mockServiceService.getServices).toHaveBeenCalledTimes(1);
 		});
 
