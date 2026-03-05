@@ -23,7 +23,6 @@ export class AuthService {
 
 	// Login, checking for user existence and comparing the password
 	// Returns a token signed using the user ID and email
-
 	async login(dto: AuthDTO): Promise<JwtToken> {
 		const email: string = dto.email;
 		const password: string = dto.password;
