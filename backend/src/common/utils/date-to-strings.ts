@@ -4,7 +4,11 @@ export function dateToStrings(timestamp: Date): [string, string] {
 	const day: number = timestamp.getDate();
 	const month: number = timestamp.getMonth() + 1;
 	const year: number = timestamp.getFullYear();
-	const dateString: string = `${day}/${month}/${year}`;
+
+	const dayFormatted: string = String(day).padStart(2, "0");
+	const monthFormatted: string = String(month).padStart(2,"0");
+
+	const dateString: string = `${dayFormatted}/${monthFormatted}/${year}`;
 
 	let hour: number = timestamp.getHours();
 	const minute: number = timestamp.getMinutes();

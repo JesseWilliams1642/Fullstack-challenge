@@ -14,7 +14,7 @@ describe("Utility Functions", () => {
 
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
-			expect(durationMs).toEqual(10 * 1000);
+			expect(durationMs).toEqual(testDuration.seconds * 1000);
 		});
 
 		it("should convert minutes correctly", () => {
@@ -24,7 +24,7 @@ describe("Utility Functions", () => {
 
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
-			expect(durationMs).toEqual(10 * 1000 * 60);
+			expect(durationMs).toEqual(testDuration.minutes * 1000 * 60);
 		});
 
 		it("should convert hours correctly", () => {
@@ -34,7 +34,7 @@ describe("Utility Functions", () => {
 
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
-			expect(durationMs).toEqual(10 * 1000 * 60 * 60);
+			expect(durationMs).toEqual(testDuration.hours * 1000 * 60 * 60);
 		});
 
 		it("should convert days correctly", () => {
@@ -44,7 +44,7 @@ describe("Utility Functions", () => {
 
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
-			expect(durationMs).toEqual(10 * 1000 * 60 * 60 * 24);
+			expect(durationMs).toEqual(testDuration.days * 1000 * 60 * 60 * 24);
 		});
 
 		it("should convert months correctly", () => {
@@ -54,7 +54,7 @@ describe("Utility Functions", () => {
 
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
-			expect(durationMs).toEqual(10 * 1000 * 60 * 60 * 24 * 30.44);
+			expect(durationMs).toEqual(testDuration.months * 1000 * 60 * 60 * 24 * 30.44);
 		});
 
 		it("should convert years correctly", () => {
@@ -64,7 +64,7 @@ describe("Utility Functions", () => {
 
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
-			expect(durationMs).toEqual(10 * 1000 * 60 * 60 * 24 * 30.44 * 365.25);
+			expect(durationMs).toEqual(testDuration.years * 1000 * 60 * 60 * 24 * 365.25);
 		});
 
 		it("should convert complex durations correctly", () => {
@@ -80,12 +80,12 @@ describe("Utility Functions", () => {
 			let durationMs = durationToMilliseconds(testDuration);
 			expect(typeof durationMs).toEqual("number");
 			expect(durationMs).toEqual(
-				30 * 1000 +
-					2 * 1000 * 60 +
-					5 * 1000 * 60 * 60 +
-					15 * 1000 * 60 * 60 * 24 +
-					4 * 1000 * 60 * 60 * 24 * 30.44 +
-					3 * 1000 * 60 * 60 * 24 * 30.44 * 365.25,
+				testDuration.seconds 	* 1000 +
+				testDuration.minutes 	* 1000 * 60 +
+				testDuration.hours 		* 1000 * 60 * 60 +
+				testDuration.days 		* 1000 * 60 * 60 * 24 +
+				testDuration.months 	* 1000 * 60 * 60 * 24 * 30.44 +
+				testDuration.years 		* 1000 * 60 * 60 * 24 * 365.25
 			);
 		});
 	});
@@ -96,7 +96,7 @@ describe("Utility Functions", () => {
 
 			const [dateString, timeString] = dateToStrings(date);
 			expect(typeof dateString).toEqual("string");
-			expect(dateString).toEqual("25/02/2026");
+			expect(dateString).toEqual("25/03/2026");
 		});
 
 		it("should convert datetime to an AM time string correctly", () => {
@@ -104,7 +104,7 @@ describe("Utility Functions", () => {
 
 			const [dateString, timeString] = dateToStrings(date);
 			expect(typeof dateString).toEqual("string");
-			expect(dateString).toEqual("13/7/2000");
+			expect(dateString).toEqual("13/08/2000");
 
 			expect(typeof timeString).toEqual("string");
 			expect(timeString).toEqual("9:44 AM");
@@ -115,29 +115,29 @@ describe("Utility Functions", () => {
 
 			const [dateString, timeString] = dateToStrings(date);
 			expect(typeof dateString).toEqual("string");
-			expect(dateString).toEqual("23/11/1991");
+			expect(dateString).toEqual("23/12/1991");
 
 			expect(typeof timeString).toEqual("string");
 			expect(timeString).toEqual("3:02 PM");
 		});
 
 		it("should handle midnight correctly", () => {
-			const date = new Date(2011, 12, 1, 0, 42);
+			const date = new Date(2011, 5, 1, 0, 42);
 
 			const [dateString, timeString] = dateToStrings(date);
 			expect(typeof dateString).toEqual("string");
-			expect(dateString).toEqual("1/12/2011");
+			expect(dateString).toEqual("01/06/2011");
 
 			expect(typeof timeString).toEqual("string");
 			expect(timeString).toEqual("12:42 AM");
 		});
 
 		it("should handle midday correctly", () => {
-			const date = new Date(2100, 1, 19, 12, 4);
+			const date = new Date(2100, 0, 19, 12, 4);
 
 			const [dateString, timeString] = dateToStrings(date);
 			expect(typeof dateString).toEqual("string");
-			expect(dateString).toEqual("10/1/2100");
+			expect(dateString).toEqual("19/01/2100");
 
 			expect(typeof timeString).toEqual("string");
 			expect(timeString).toEqual("12:04 PM");
@@ -149,31 +149,36 @@ describe("Utility Functions", () => {
 		const string2 = "bpoij0923unvdsoihf0283t3g";
 
 		it("should have an expected hash format", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const hash = await hashPassword(string1);
 			expect(typeof hash).toEqual("string");
 			expect(hash.length).toEqual(60);
 		});
 
-		it("should be the same hash for the same input", async () => {
+		it("should be different hashes due to different salts", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const hash1 = await hashPassword(string1);
 			const hash2 = await hashPassword(string1);
-			expect(hash1 === hash2).toEqual(true);
+			expect(hash1 != hash2).toEqual(true);
 		});
 
 		it("should be different hashes for different inputs", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const hash1 = await hashPassword(string1);
 			const hash2 = await hashPassword(string2);
 			expect(hash1 != hash2).toEqual(true);
 		});
 
 		it("should pass when compared with the same password", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const hash1 = await hashPassword(string1);
-			expect(comparePassword(string1, hash1)).toEqual(true);
+			expect(await comparePassword(string1, hash1)).toEqual(true);
 		});
 
 		it("should fail when compared with a differing password", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const hash1 = await hashPassword(string1);
-			expect(comparePassword(string2, hash1)).toEqual(false);
+			expect(await comparePassword(string2, hash1)).toEqual(false);
 		});
 	});
 });
