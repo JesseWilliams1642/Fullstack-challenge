@@ -1,17 +1,8 @@
-// Utility function to convert PostgresInterval values from its
-// "string" (object thought of as a string by TS) to milliseconds
+import { PostgresInterval } from "../types";
 
-interface PostgresInterval {
-	years: number;
-	months: number;
-	days: number;
-	hours: number;
-	minutes: number;
-	seconds: number;
-}
+// Utility function to convert PostgresInterval values to milliseconds
 
-export function durationToMilliseconds(duration: unknown): number {
-	const objectDuration = duration as PostgresInterval;
+export function durationToMilliseconds(duration: PostgresInterval): number {
 
 	const MS_PER_SECOND = 1000;
 	const MS_PER_MINUTE = MS_PER_SECOND * 60;
@@ -21,12 +12,12 @@ export function durationToMilliseconds(duration: unknown): number {
 	const MS_PER_YEAR = MS_PER_DAY * 365.25;
 
 	const newDuration: number =
-		(objectDuration.seconds ?? 0) * MS_PER_SECOND +
-		(objectDuration.minutes ?? 0) * MS_PER_MINUTE +
-		(objectDuration.hours ?? 0) * MS_PER_HOUR +
-		(objectDuration.days ?? 0) * MS_PER_DAY +
-		(objectDuration.months ?? 0) * MS_PER_MONTH +
-		(objectDuration.years ?? 0) * MS_PER_YEAR;
+		(duration.seconds ?? 0) * MS_PER_SECOND +
+		(duration.minutes ?? 0) * MS_PER_MINUTE +
+		(duration.hours ?? 0) * MS_PER_HOUR +
+		(duration.days ?? 0) * MS_PER_DAY +
+		(duration.months ?? 0) * MS_PER_MONTH +
+		(duration.years ?? 0) * MS_PER_YEAR;
 
 	return newDuration;
 }

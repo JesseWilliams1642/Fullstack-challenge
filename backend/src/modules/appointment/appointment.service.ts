@@ -11,6 +11,7 @@ import { Staff } from "../staff/staff.entity";
 import { Appointment } from "./appointment.entity";
 import { dateToStrings, durationToMilliseconds } from "../../common/utils";
 import { User } from "../user/user.entity";
+import { PostgresInterval } from "src/common/types";
 
 @Injectable()
 export class AppointmentService {
@@ -79,19 +80,19 @@ export class AppointmentService {
 		// Get staff-related information in milliseconds
 
 		const staffDayStart: number =
-			durationToMilliseconds(staff.startTime) + day.getTime();
+			durationToMilliseconds(staff.startTime as PostgresInterval) + day.getTime();
 		const staffDayEnd: number =
-			staffDayStart + durationToMilliseconds(staff.shiftDuration);
+			staffDayStart + durationToMilliseconds(staff.shiftDuration as PostgresInterval);
 
-		const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod);
+		const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod as PostgresInterval);
 
 		const staffBreakStart: number =
-			durationToMilliseconds(staff.breakTime) + day.getTime();
+			durationToMilliseconds(staff.breakTime as PostgresInterval) + day.getTime();
 		const staffBreakEnd: number =
-			staffBreakStart + durationToMilliseconds(staff.breakDuration);
+			staffBreakStart + durationToMilliseconds(staff.breakDuration as PostgresInterval);
 
 		// Service-related information in milliseconds
-		const serviceDuration: number = durationToMilliseconds(service.serviceDuration);
+		const serviceDuration: number = durationToMilliseconds(service.serviceDuration as PostgresInterval);
 
 		// Get user appointments to check for overlaps
 		let userAppointments: Appointment[] = await this.appointmentRepository
@@ -126,7 +127,7 @@ export class AppointmentService {
 		for (let appointment of userAppointments) {
 			const appointmentStart: number = appointment.startTimestamp.getTime();
 			const appointmentEnd: number =
-				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration as PostgresInterval);
 
 			possibleTimes = possibleTimes.filter((time) => {
 				if (
@@ -143,7 +144,7 @@ export class AppointmentService {
 		for (let appointment of staffAppointments) {
 			const appointmentStart: number = appointment.startTimestamp.getTime();
 			const appointmentEnd: number =
-				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration as PostgresInterval);
 
 			possibleTimes = possibleTimes.filter((time) => {
 				if (
@@ -219,19 +220,19 @@ export class AppointmentService {
 		// Get staff-related information in milliseconds
 
 		const staffDayStart: number =
-			durationToMilliseconds(staff.startTime) + day.getTime();
+			durationToMilliseconds(staff.startTime as PostgresInterval) + day.getTime();
 		const staffDayEnd: number =
-			staffDayStart + durationToMilliseconds(staff.shiftDuration);
+			staffDayStart + durationToMilliseconds(staff.shiftDuration as PostgresInterval);
 
-		const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod);
+		const staffBuffer: number = durationToMilliseconds(staff.bufferPeriod as PostgresInterval);
 
 		const staffBreakStart: number =
-			durationToMilliseconds(staff.breakTime) + day.getTime();
+			durationToMilliseconds(staff.breakTime as PostgresInterval) + day.getTime();
 		const staffBreakEnd: number =
-			staffBreakStart + durationToMilliseconds(staff.breakDuration);
+			staffBreakStart + durationToMilliseconds(staff.breakDuration as PostgresInterval);
 
 		// Service-related information in milliseconds
-		const serviceDuration: number = durationToMilliseconds(service.serviceDuration);
+		const serviceDuration: number = durationToMilliseconds(service.serviceDuration as PostgresInterval);
 
 		// Specific appointment start/end time
 		const chosenAppointmentStart: number = date.getTime();
@@ -275,7 +276,7 @@ export class AppointmentService {
 		for (let appointment of userAppointments) {
 			const appointmentStart: number = appointment.startTimestamp.getTime();
 			const appointmentEnd: number =
-				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration as PostgresInterval);
 
 			if (
 				chosenAppointmentStart > appointmentStart - (serviceDuration + staffBuffer) &&
@@ -290,7 +291,7 @@ export class AppointmentService {
 		for (let appointment of staffAppointments) {
 			const appointmentStart: number = appointment.startTimestamp.getTime();
 			const appointmentEnd: number =
-				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration);
+				appointmentStart + durationToMilliseconds(appointment.service.serviceDuration as PostgresInterval);
 
 			if (
 				chosenAppointmentStart > appointmentStart - (serviceDuration + staffBuffer) &&

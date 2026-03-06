@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, IsUrl, IsUUID } from "class-validator";
+import { PostgresInterval } from "../../../common/types";
 
 export class GetServiceDTO {
 	@IsUUID()
@@ -11,7 +12,7 @@ export class GetServiceDTO {
 
 	@IsString()
 	@IsNotEmpty()
-	serviceDuration!: string;
+	serviceDuration!: string | PostgresInterval;
 
 	@IsString()
 	@IsNotEmpty()

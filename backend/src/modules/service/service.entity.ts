@@ -1,3 +1,4 @@
+import { PostgresInterval } from "src/common/types";
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "services" })
@@ -9,7 +10,7 @@ export class Service {
 	serviceName!: string;
 
 	@Column({ name: "service_duration", type: "interval", nullable: false })
-	serviceDuration!: string;
+	serviceDuration!: string | PostgresInterval;
 
 	@Column({ name: "service_description", type: "varchar", nullable: false })
 	serviceDescription!: string;

@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { Appointment } from "../appointment/appointment.entity";
+import { PostgresInterval } from "src/common/types";
 
 @Entity({ name: "staff" })
 export class Staff {
@@ -19,19 +20,19 @@ export class Staff {
 	daysWorking!: boolean[];
 
 	@Column({ name: "start_time", type: "interval", nullable: false })
-	startTime!: string;
+	startTime!: string | PostgresInterval;
 
 	@Column({ name: "shift_duration", type: "interval" })
-	shiftDuration!: string;
+	shiftDuration!: string | PostgresInterval;
 
 	@Column({ name: "break_time", type: "interval", nullable: false })
-	breakTime!: string;
+	breakTime!: string | PostgresInterval;
 
 	@Column({ name: "break_duration", type: "interval", nullable: false })
-	breakDuration!: string;
+	breakDuration!: string | PostgresInterval;
 
 	@Column({ name: "buffer_period", type: "interval", nullable: false })
-	bufferPeriod!: string;
+	bufferPeriod!: string | PostgresInterval;
 
 	constructor(
 		name: string,
