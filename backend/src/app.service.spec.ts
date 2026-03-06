@@ -49,10 +49,7 @@ describe("AppService", () => {
 
 			const result = await service.getServices();
 
-			expect(result).toEqual({
-				data: mockServices,
-				error: null,
-			});
+			expect(result).toEqual(mockServices);
 			expect(mockAppService.getServices).toHaveBeenCalledTimes(1);
 			expect(result).toHaveLength(2);
 		});
@@ -62,10 +59,7 @@ describe("AppService", () => {
 
 			const result = await service.getServices();
 
-			expect(result).toEqual({
-				data: [],
-				error: null,
-			});
+			expect(result).toEqual([]);
 			expect(mockAppService.getServices).toHaveBeenCalledTimes(1);
 		});
 

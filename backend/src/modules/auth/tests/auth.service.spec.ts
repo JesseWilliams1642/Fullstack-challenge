@@ -5,13 +5,16 @@ import {
 	InternalServerErrorException,
 	NotFoundException,
 } from "@nestjs/common";
-import { SafeUser } from "src/common/types";
-import { hashPassword } from "src/common/utils";
-import { User } from "src/modules/user/user.entity";
+import { User } from "../../user/user.entity";
 import { JwtService } from "@nestjs/jwt";
-import { mock } from "node:test";
+import { hashPassword, comparePassword } from "../../../common/utils";
 
-describe("AuthService", async () => {
+jest.mock("../../../common/utils", () => ({
+  ...jest.requireActual("../../../common/utils"),
+  comparePassword: jest.fn(),
+}));
+
+describe("AuthService", () => {
 	let service: AuthService;
 	let mockUserRepository: jest.Mocked<any>;
 	let mockJwt: jest.Mocked<any>;
@@ -20,13 +23,17 @@ describe("AuthService", async () => {
 		id: "1afa573b-4c6c-4fb5-9aa9-adf48a7c90f0",
 		name: "John Doe",
 		email: "test@email.com",
-		hashedPassword: await hashPassword("password"),
+		hashedPassword: "",
 	} as User;
 
 	const mockCredentials = {
 		email: "test@email.com",
 		password: "password",
 	};
+
+	beforeAll(async () => {
+		mockUser.hashedPassword = await hashPassword("password");
+	});
 
 	beforeEach(async () => {
 		mockUserRepository = {
@@ -57,18 +64,19 @@ describe("AuthService", async () => {
 		jest.clearAllMocks();
 	});
 
-	describe("login", async () => {
-		beforeEach(() => {
-			jest
-				.spyOn(service, "signToken")
-				.mockResolvedValue({ jwtToken: "signed-token" });
+	describe("login", () => {
+		beforeAll(() => {
+			(comparePassword as jest.Mock).mockResolvedValue(true);
+		});
 
-			jest
-				.spyOn(require("src/common/utils"), "comparePassword")
-				.mockResolvedValue(true);
+		beforeEach(() => {
+			(comparePassword as jest.Mock).mockClear();
+			jest.spyOn(service, 'signToken').mockResolvedValue({ jwtToken: 'signed-token' });
 		});
 
 		it("should return a JWT token for valid credentials", async () => {
+			process.env.SALT_ROUNDS = "5";
+			process.env.JWT_SECRET = "test-secret";
 			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
 			const result = await service.login(mockCredentials);
@@ -80,17 +88,18 @@ describe("AuthService", async () => {
 			});
 			expect(mockUserRepository.findOneBy).toHaveBeenCalledTimes(1);
 
-			expect(require("src/common/utils").comparePassword).toHaveBeenCalledWith(
+			expect(comparePassword).toHaveBeenCalledWith(
 				mockCredentials.password,
 				mockUser.hashedPassword,
 			);
-			expect(require("src/common/utils").comparePassword).toHaveBeenCalledTimes(1);
+			expect(comparePassword).toHaveBeenCalledTimes(1);
 
 			expect(service.signToken).toHaveBeenCalledWith(mockUser.id, mockUser.email);
 			expect(service.signToken).toHaveBeenCalledTimes(1);
 		});
 
 		it("should throw NotFoundException if user is not found", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const error = new NotFoundException("User was not found.");
 			mockUserRepository.findOneBy.mockResolvedValue(null);
 
@@ -104,11 +113,10 @@ describe("AuthService", async () => {
 		});
 
 		it("should throw BadRequestException if password is incorrect", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const error = new BadRequestException("Incorrect password.");
 			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-			(require("src/common/utils").comparePassword as jest.Mock).mockResolvedValue(
-				false,
-			);
+			(comparePassword as jest.Mock).mockResolvedValue(false);
 
 			await expect(service.login(mockCredentials)).rejects.toThrow(error);
 
@@ -117,20 +125,21 @@ describe("AuthService", async () => {
 			});
 			expect(mockUserRepository.findOneBy).toHaveBeenCalledTimes(1);
 
-			expect(require("src/common/utils").comparePassword).toHaveBeenCalledWith(
+			expect(comparePassword).toHaveBeenCalledWith(
 				mockCredentials.password,
 				mockUser.hashedPassword,
 			);
-			expect(require("src/common/utils").comparePassword).toHaveBeenCalledTimes(1);
+			expect(comparePassword).toHaveBeenCalledTimes(1);
 
 			expect(service.signToken).toHaveBeenCalledTimes(0);
 		});
 	});
 
-	describe("signToken", async () => {
+	describe("signToken", () => {
 		it("should return a JWT token with correct payload", async () => {
-			mockJwt.signAsync.mockResolvedValue("signed-token");
+			process.env.SALT_ROUNDS = "5";
 			process.env.JWT_SECRET = "test-secret";
+			mockJwt.signAsync.mockResolvedValue("signed-token");
 
 			const token = await service.signToken(mockUser.id, mockUser.email);
 			expect(token).toHaveProperty("jwtToken");
@@ -138,8 +147,9 @@ describe("AuthService", async () => {
 		});
 
 		it("should throw an error if JWT_SECRET is not set", async () => {
+			process.env.SALT_ROUNDS = "5";
+			process.env.JWT_SECRET = "";
 			const error = new InternalServerErrorException("JWT_SECRET must be set.");
-			process.env.JWT_SECRET = undefined;
 
 			await expect(service.signToken(mockUser.id, mockUser.email)).rejects.toThrow(
 				error,
@@ -148,7 +158,8 @@ describe("AuthService", async () => {
 		});
 	});
 
-	describe("createUser", async () => {
+	describe("createUser", () => {
+		process.env.SALT_ROUNDS = "5";
 		it("should create a new user and return safe user data", async () => {
 			mockUserRepository.findOneBy.mockResolvedValue(null);
 			mockUserRepository.create.mockResolvedValue(mockUser);
@@ -174,6 +185,7 @@ describe("AuthService", async () => {
 		});
 
 		it("should throw an error if user with email already exists", async () => {
+			process.env.SALT_ROUNDS = "5";
 			const error = new BadRequestException("User is already registered.");
 			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 

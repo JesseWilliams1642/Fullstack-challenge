@@ -26,6 +26,7 @@ describe("AuthController", () => {
 		mockAuthService = {
 			login: jest.fn(),
 			addUser: jest.fn(),
+			createUser: jest.fn(),
 		} as unknown as jest.Mocked<AuthService>;
 
 		const module: TestingModule = await Test.createTestingModule({
