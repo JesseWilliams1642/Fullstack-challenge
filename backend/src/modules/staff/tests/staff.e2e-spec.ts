@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import cookieParser from "cookie-parser";
 import { StaffModule } from "../staff.module";
@@ -11,7 +11,7 @@ describe("Staff Module (e2e)", () => {
 
 	// Test constants
 	const TEST_USER = {
-		email: "test@supertest.haha",
+		email: "teststaff@supertest.haha",
 		password: "testpassword",
 		name: "Test User",
 	};
@@ -25,6 +25,7 @@ describe("Staff Module (e2e)", () => {
 		}).compile();
 
 		app = module.createNestApplication();
+		app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 		app.use(cookieParser());
 		await app.init();
 

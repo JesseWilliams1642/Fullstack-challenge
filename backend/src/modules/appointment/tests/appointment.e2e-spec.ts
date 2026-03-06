@@ -1,12 +1,12 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import cookieParser from "cookie-parser";
 import { AppointmentModule } from "../appointment.module";
 import { AuthModule } from "../../auth/auth.module";
 import { GetAppointmentAvailabilityDTO } from "../dto";
-import { ServiceService } from "src/modules/service/service.service";
-import { StaffService } from "src/modules/staff/staff.service";
+import { ServiceService } from "../../service/service.service";
+import { StaffService } from "../../staff/staff.service";
 
 describe("Appointment Module (e2e)", () => {
 	let app: INestApplication;
@@ -20,7 +20,7 @@ describe("Appointment Module (e2e)", () => {
 
 	// Test constants
 	const TEST_USER = {
-		email: "test@supertest.haha",
+		email: "testappointment@supertest.haha",
 		password: "testpassword",
 		name: "Test User",
 	};
@@ -31,10 +31,10 @@ describe("Appointment Module (e2e)", () => {
 	beforeAll(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			imports: [AppointmentModule, AuthModule],
-			providers: [ServiceService, StaffService],
 		}).compile();
 
 		app = module.createNestApplication();
+		app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 		app.use(cookieParser());
 		await app.init();
 
@@ -111,9 +111,9 @@ describe("Appointment Module (e2e)", () => {
 			};
 
 			const res = await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
-				.query({ dto: JSON.stringify(testDTO) })
+				.query(testDTO)
 				.expect(200);
 
 			expect(res.body).toHaveProperty("data");
@@ -124,108 +124,94 @@ describe("Appointment Module (e2e)", () => {
 		});
 
 		it("should return 401 when accessing without authentication", async () => {
-			await request(app.getHttpServer()).get("/api/appointment").expect(401);
+			await request(app.getHttpServer()).get("/api/appointment/availability").expect(401);
 		});
 
 		it("should return 401 with invalid JWT token", async () => {
 			await request(app.getHttpServer())
-				.get("/api/service")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader("invalid-token"))
 				.expect(401);
 		});
 
 		it("should return 400 for non-UUID serviceID", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						date: new Date("2024-02-27").toISOString(),
-						serviceID: "invalid-uuid",
-						staffID: staffId,
-					}),
+					date: new Date("2024-02-27").toISOString(),
+					serviceID: "invalid-uuid",
+					staffID: staffId,
 				})
 				.expect(400);
 		});
 
 		it("should return 400 for empty serviceID", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						date: new Date("2024-02-27").toISOString(),
-						staffID: staffId,
-					}),
+					date: new Date("2024-02-27").toISOString(),
+					staffID: staffId,
 				})
 				.expect(400);
 		});
 
 		it("should return 400 for non-UUID staffID", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						date: new Date("2024-02-27").toISOString(),
-						serviceID: serviceId,
-						staffID: "invalid-uuid",
-					}),
+					date: new Date("2024-02-27").toISOString(),
+					serviceID: serviceId,
+					staffID: "invalid-uuid",
 				})
 				.expect(400);
 		});
 
 		it("should return 400 for empty staffID", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						date: new Date("2024-02-27").toISOString(),
-						serviceID: serviceId,
-					}),
+					date: new Date("2024-02-27").toISOString(),
+					serviceID: serviceId,
 				})
 				.expect(400);
 		});
 
 		it("should return 400 for non-ISO8601 date", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						date: "invalid-date",
-						serviceID: serviceId,
-						staffID: staffId,
-					}),
+					date: "invalid-date",
+					serviceID: serviceId,
+					staffID: staffId,
 				})
 				.expect(400);
 		});
 
 		it("should return 400 for empty date", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						serviceID: serviceId,
-						staffID: staffId,
-					}),
+					serviceID: serviceId,
+					staffID: staffId,
 				})
 				.expect(400);
 		});
 
 		it("should return 400 for non-UUID serviceID", async () => {
 			await request(app.getHttpServer())
-				.get("/api/appointment")
+				.get("/api/appointment/availability")
 				.set("Cookie", getCookieHeader(authToken))
 				.query({
-					dto: JSON.stringify({
-						date: new Date("2024-02-27").toISOString(),
-						serviceID: serviceId,
-						staffID: staffId,
-						appointmentId: "invalid-uuid",
-					}),
+					date: new Date("2024-02-27").toISOString(),
+					serviceID: serviceId,
+					staffID: staffId,
+					appointmentID: "invalid-uuid",
 				})
 				.expect(400);
 		});

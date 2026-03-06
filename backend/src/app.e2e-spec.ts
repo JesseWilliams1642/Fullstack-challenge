@@ -1,7 +1,7 @@
 // api/health
 // api/services
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
@@ -16,6 +16,7 @@ describe("Service Module (e2e)", () => {
 		}).compile();
 
 		app = module.createNestApplication();
+		app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 		app.use(cookieParser());
 		await app.init();
 	});

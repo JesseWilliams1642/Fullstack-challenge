@@ -1,4 +1,4 @@
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AuthModule } from "../auth.module";
 import cookieParser from "cookie-parser";
@@ -7,14 +7,21 @@ import request from "supertest";
 describe("Auth Module (e2e)", () => {
 	let app: INestApplication;
 	let authToken: string;
+	let authRegisterToken: string;
 
 	// Test constants
 	const TEST_USER = {
-		email: "test@supertest.haha",
+		email: "testauth@supertest.haha",
 		password: "testpassword",
 		name: "Test User",
 	};
 
+	const TEST_REGISTER_USER = {
+		email: "testauth2@supertest.haha",
+		password: "testpassword",
+		name: "Test User",
+	}
+	
 	const getCookieHeader = (token: string) => `JWT_fullstack=${token}`;
 
 	// Set up NestJS application and register/login test user to get auth token for protected routes
@@ -25,8 +32,41 @@ describe("Auth Module (e2e)", () => {
 		}).compile();
 
 		app = module.createNestApplication();
+		app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 		app.use(cookieParser());
 		await app.init();
+
+		// Register user for login and /me APIs
+		const registerRes = await request(app.getHttpServer())
+			.post("/api/auth/register")
+			.send(TEST_USER);
+
+		if (registerRes.status !== 201) {
+			throw new Error(
+				`Failed to register test user. Status: ${registerRes.status}, Body: ${JSON.stringify(registerRes.body)}`,
+			);
+		}
+
+		// Login and capture JWT token
+		const loginRes = await request(app.getHttpServer())
+			.post("/api/auth/login")
+			.send({
+				email: TEST_USER.email,
+				password: TEST_USER.password,
+			});
+
+		if (loginRes.status !== 200) {
+			throw new Error(
+				`Failed to log in test user. Status: ${loginRes.status}, Body: ${JSON.stringify(loginRes.body)}`,
+			);
+		}
+
+		const setCookieHeader = loginRes.headers["set-cookie"]?.[0];
+		if (!setCookieHeader) throw new Error("No Set-Cookie header in login response");
+
+		authToken = setCookieHeader.split(";")[0].split("=")[1];
+		if (!authToken)
+			throw new Error("Failed to extract JWT token from Set-Cookie header");
 
 	});
 
@@ -43,6 +83,17 @@ describe("Auth Module (e2e)", () => {
 			}
 		}
 
+		if (authRegisterToken) {
+			try {
+				await request(app.getHttpServer())
+					.delete("/api/user/account")
+					.set("Cookie", getCookieHeader(authRegisterToken))
+					.send();
+			} catch (error) {
+				console.warn("Failed to clean up test user:", error);
+			}
+		}
+
 		if (app) {
 			await app.close();
 		}
@@ -52,7 +103,7 @@ describe("Auth Module (e2e)", () => {
 		it("should return the created user for a successful registration", async () => {
 			const registerRes = await request(app.getHttpServer())
 				.post("/api/auth/register")
-				.send(TEST_USER)
+				.send(TEST_REGISTER_USER)
 				.expect(201);
 
 			expect(registerRes.body).toHaveProperty("data");
@@ -60,7 +111,7 @@ describe("Auth Module (e2e)", () => {
 			const createdUser = registerRes.body.data;
 			expect(registerRes.body.error).toBeNull;
 
-			expect(createdUser).toHaveProperty("email", TEST_USER.email);
+			expect(createdUser).toHaveProperty("email", TEST_REGISTER_USER.email);
 			expect(typeof createdUser.email).toBe("string");
 			expect(createdUser.email.length).toBeGreaterThan(0);
 			
@@ -68,15 +119,32 @@ describe("Auth Module (e2e)", () => {
 			expect(typeof createdUser.id).toBe("string");
 			expect(createdUser.id.length).toBeGreaterThan(0);
 			
-			expect(createdUser).toHaveProperty("name", TEST_USER.name);
+			expect(createdUser).toHaveProperty("name", TEST_REGISTER_USER.name);
 			expect(typeof createdUser.name).toBe("string");
 			expect(createdUser.name.length).toBeGreaterThan(0);
+
+		});
+
+		it("should login using these registered credentials", async () => {
+			// Login and capture JWT token
+			const loginRes = await request(app.getHttpServer())
+				.post("/api/auth/login")
+				.send({
+					email: TEST_REGISTER_USER.email,
+					password: TEST_REGISTER_USER.password,
+				})
+				.expect(200);
+
+			const setCookieHeader = loginRes.headers["set-cookie"]?.[0];
+			authRegisterToken = setCookieHeader.split(";")[0].split("=")[1];
+			expect(authRegisterToken).not.toBeNull();
+
 		});
 
 		it("should throw an error if the user already exists", async () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
-				.send(TEST_USER)
+				.send(TEST_REGISTER_USER)
 				.expect(400);
 		});
 
@@ -84,8 +152,8 @@ describe("Auth Module (e2e)", () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
 				.send({
-					name: TEST_USER.name,
-					password: TEST_USER.password
+					name: TEST_REGISTER_USER.name,
+					password: TEST_REGISTER_USER.password
 				})
 				.expect(400);
 		});
@@ -95,8 +163,8 @@ describe("Auth Module (e2e)", () => {
 				.post("/api/auth/register")
 				.send({
 					email: "thisisnotanemail",
-					name: TEST_USER.name,
-					password: TEST_USER.password
+					name: TEST_REGISTER_USER.name,
+					password: TEST_REGISTER_USER.password
 				})
 				.expect(400);
 		});
@@ -105,8 +173,8 @@ describe("Auth Module (e2e)", () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
 				.send({
-					email: TEST_USER.email,
-					name: TEST_USER.name,
+					email: TEST_REGISTER_USER.email,
+					name: TEST_REGISTER_USER.name,
 				})
 				.expect(400);
 		});
@@ -115,8 +183,8 @@ describe("Auth Module (e2e)", () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
 				.send({
-					email: TEST_USER.email,
-					name: TEST_USER.name,
+					email: TEST_REGISTER_USER.email,
+					name: TEST_REGISTER_USER.name,
 					password: 1234
 				})
 				.expect(400);
@@ -126,8 +194,8 @@ describe("Auth Module (e2e)", () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
 				.send({
-					email: TEST_USER.email,
-					name: TEST_USER.name,
+					email: TEST_REGISTER_USER.email,
+					name: TEST_REGISTER_USER.name,
 					password: "uhoh"
 				})
 				.expect(400);
@@ -137,8 +205,8 @@ describe("Auth Module (e2e)", () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
 				.send({
-					email: TEST_USER.email,
-					password: TEST_USER.password
+					email: TEST_REGISTER_USER.email,
+					password: TEST_REGISTER_USER.password
 				})
 				.expect(400);
 		});
@@ -147,9 +215,9 @@ describe("Auth Module (e2e)", () => {
 			await request(app.getHttpServer())
 				.post("/api/auth/register")
 				.send({
-					email: TEST_USER.email,
+					email: TEST_REGISTER_USER.email,
 					name: 1234,
-					password: TEST_USER.password
+					password: TEST_REGISTER_USER.password
 				})
 				.expect(400);
 		});
@@ -173,7 +241,7 @@ describe("Auth Module (e2e)", () => {
 			expect(typeof authToken).toBe("string");
 			expect(authToken.length).toBeGreaterThan(0);
 
-			expect(loginRes.body).toHaveProperty("data", "Logged out successfully.");
+			expect(loginRes.body).toHaveProperty("data", "Logged in successfully.");
 			expect(loginRes.body).toHaveProperty("error", null);
 		});
 
@@ -249,15 +317,15 @@ describe("Auth Module (e2e)", () => {
 
 	describe("GET api/auth/me", () => {
 		it("should return user information for valid authenticated JWT token", async () => {
-			const registerRes = await request(app.getHttpServer())
-				.post("/api/auth/me")
+			const meRes = await request(app.getHttpServer())
+				.get("/api/auth/me")
 				.set("Cookie", getCookieHeader(authToken))
 				.expect(200);
 
-			expect(registerRes.body).toHaveProperty("data");
-			expect(registerRes.body).toHaveProperty("error");
-			const returnedUser = registerRes.body.data;
-			expect(registerRes.body.error).toBeNull;
+			expect(meRes.body).toHaveProperty("data");
+			expect(meRes.body).toHaveProperty("error");
+			const returnedUser = meRes.body.data;
+			expect(meRes.body.error).toBeNull;
 
 			expect(returnedUser).toHaveProperty("email", TEST_USER.email);
 			expect(typeof returnedUser.email).toBe("string");
@@ -291,7 +359,8 @@ describe("Auth Module (e2e)", () => {
 				.expect(200);
 
 			const setCookieHeader = logoutRes.headers["set-cookie"]?.[0];
-			expect(setCookieHeader).toBeNull();
+			const newAuthToken = setCookieHeader.split(";")[0].split("=")[1];
+			expect(newAuthToken).toEqual("");
 
 			expect(logoutRes.body).toHaveProperty("data", "Logged out successfully.");
 			expect(logoutRes.body).toHaveProperty("error", null);
