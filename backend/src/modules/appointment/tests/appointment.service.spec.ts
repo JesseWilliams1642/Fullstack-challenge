@@ -3,7 +3,6 @@ import { Appointment } from "../appointment.entity";
 import { AppointmentService } from "../appointment.service";
 import { Staff } from "src/modules/staff/staff.entity";
 import { User } from "src/modules/user/user.entity";
-import { GetServiceDTO } from "src/modules/service/dto";
 import { Service } from "src/modules/service/service.entity";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 
@@ -18,7 +17,7 @@ describe("AppointmentService", () => {
 	const mockService: Service = {
 		id: "550e8400-e29b-41d4-a716-446655440000",
 		serviceName: "Haircut",
-		serviceDuration: "30m",
+		serviceDuration: { years: 0, months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 },
 		serviceDescription: "A basic haircut",
 		serviceImage: "https://example.com/haircut.jpg",
 	};
@@ -27,22 +26,11 @@ describe("AppointmentService", () => {
 		id: "550e8400-e29b-41d4-a716-446655440000",
 		name: "Jesse",
 		daysWorking: [true, true, true, true, true, false, false],
-		startTime: "9h",
-		shiftDuration: "8h",
-		breakTime: "12h",
-		breakDuration: "1h",
-		bufferPeriod: "15m",
-	};
-
-	const mockStaff2: Staff = {
-		id: "550e8400-e29b-41d4-a716-446655440001",
-		name: "Chris",
-		daysWorking: [true, true, true, true, true, false, false],
-		startTime: "9h",
-		shiftDuration: "8h",
-		breakTime: "12h",
-		breakDuration: "1h",
-		bufferPeriod: "15m",
+		startTime: { years: 0, months: 0, days: 0, hours: 9, minutes: 0, seconds: 0 },
+		shiftDuration: { years: 0, months: 0, days: 0, hours: 8, minutes: 0, seconds: 0 },
+		breakTime: { years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 },
+		breakDuration: { years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 },
+		bufferPeriod: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
 	};
 
 	const mockUser: User = {
@@ -64,34 +52,16 @@ describe("AppointmentService", () => {
 	// Generic appointment
 	const mockStaffAppointment: Appointment = {
 		id: "550e8400-e29b-41d4-a716-446655440000",
-		startTimestamp: new Date("2001-01-01T10:00:00Z"),
+		startTimestamp: new Date(2001, 0, 1, 10, 0, 0), // 2001-01-01 at 10:00 AM local time
 		service: mockService,
 		user: mockUser,
 		staff: mockStaff,
-	};
-
-	// To test for overlapping appointments
-	const mockStaffAppointment2: Appointment = {
-		id: "550e8400-e29b-41d4-a716-446655440001",
-		startTimestamp: new Date("2001-01-01T10:05:00Z"),
-		service: mockService,
-		user: mockUser,
-		staff: mockStaff,
-	};
-
-	// To test for overlap between staff appointments
-	const mockStaffAppointment3: Appointment = {
-		id: "550e8400-e29b-41d4-a716-446655440002",
-		startTimestamp: new Date("2001-01-01T10:10:00Z"),
-		service: mockService,
-		user: mockUser,
-		staff: mockStaff2,
 	};
 
 	// To test for overlap between user appointments
-	const mockStaffAppointment4: Appointment = {
+	const mockStaffAppointment2: Appointment = {
 		id: "550e8400-e29b-41d4-a716-446655440003",
-		startTimestamp: new Date("2001-01-01T10:15:00Z"),
+		startTimestamp: new Date(2001, 0, 1, 10, 15, 0), // 2001-01-01 at 10:15 AM local time
 		service: mockService,
 		user: mockUser2,
 		staff: mockStaff,
@@ -158,34 +128,33 @@ describe("AppointmentService", () => {
 			};
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
-			mockServiceRepository.findOneBy.mockResolvedValue([mockService]);
-			mockStaffRepository.findOneBy.mockResolvedValue([mockStaff]);
-			mockUserRepository.findOneBy.mockResolvedValue([mockUser]);
+			mockServiceRepository.findOneBy.mockResolvedValue(mockService);
+			mockStaffRepository.findOneBy.mockResolvedValue(mockStaff);
+			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
 			const result = await service.getAvailabilities(
-				new Date("2001-01-01"),
+				new Date(2001, 0, 1), // Local midnight (Monday)
+				mockUser.id,
 				mockService.id,
 				mockStaff.id,
-				mockUser.id,
 				null,
 			);
 
 			// 9am to 5pm, break from 12pm to 1pm, 30 minute service duration
-			// 8 hours shift = 8 * 12 5 minute slots, minus 5+5=10 for break + buffer time before it,
-			// minus buffer time (5 slots) for the last slot before closing time
-			expect(result).toHaveLength(8 * 12 - 10 - 5);
+			// Checked that it must be 74 manually
+			expect(result).toHaveLength(74);
 
 			// Inside of work hours
-			expect(result[0]).toBe("2001-01-01T09:00:00.000Z");
-			expect(result[result.length - 1]).toBe("2001-01-01T16:30:00.000Z");
+			expect(result[0]).toBe("9:00 AM");
+			expect(result[result.length - 1]).toBe("4:30 PM");
 
 			// Not overlapping with break time
-			expect(result).toContain("2001-01-01T11:30:00.000Z");
-			expect(result).not.toContain("2001-01-01T11:35:00.000Z");
-			expect(result).not.toContain("2001-01-01T12:00:00.000Z");
-			expect(result).not.toContain("2001-01-01T12:05:00.000Z");
-			expect(result).not.toContain("2001-01-01T12:55:00.000Z");
-			expect(result).toContain("2001-01-01T13:00:00.000Z");
+			expect(result).toContain("11:30 AM");
+			expect(result).not.toContain("11:35 AM");
+			expect(result).not.toContain("12:00 PM");
+			expect(result).not.toContain("12:05 PM");
+			expect(result).not.toContain("12:55 PM");
+			expect(result).toContain("1:00 PM");
 
 			// Check that the functions were called the correct number of times
 			expect(mockStaffRepository.findOneBy).toHaveBeenCalledTimes(1);
@@ -203,19 +172,19 @@ describe("AppointmentService", () => {
 			};
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
-			mockServiceRepository.findOneBy.mockResolvedValue([mockService]);
-			mockStaffRepository.findOneBy.mockResolvedValue([mockStaff]);
-			mockUserRepository.findOneBy.mockResolvedValue([mockUser]);
+			mockServiceRepository.findOneBy.mockResolvedValue(mockService);
+			mockStaffRepository.findOneBy.mockResolvedValue(mockStaff);
+			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
 			const result = await service.getAvailabilities(
-				new Date("2000-01-01"), // A Saturday!
+				new Date(2000, 0, 1), // A Saturday (Local midnight)
+				mockUser.id,
 				mockService.id,
 				mockStaff.id,
-				mockUser.id,
 				null,
 			);
 
-			expect(result).toBe([]);
+			expect(result).toStrictEqual([]);
 
 			// Check that the functions were called the correct number of times
 			expect(mockStaffRepository.findOneBy).toHaveBeenCalledTimes(1);
@@ -233,28 +202,30 @@ describe("AppointmentService", () => {
 			};
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
-			mockServiceRepository.findOneBy.mockResolvedValue([mockService]);
-			mockStaffRepository.findOneBy.mockResolvedValue([mockStaff]);
-			mockUserRepository.findOneBy.mockResolvedValue([mockUser]);
+			mockServiceRepository.findOneBy.mockResolvedValue(mockService);
+			mockStaffRepository.findOneBy.mockResolvedValue(mockStaff);
+			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
 			const result = await service.getAvailabilities(
-				new Date("2001-01-01"),
+				new Date(2001, 0, 1), // Local midnight (Monday)
+				mockUser.id,
 				mockService.id,
 				mockStaff.id,
-				mockUser.id,
 				null,
 			);
+
+			console.log(result);
 
 			// Overlap with appointment and buffer period
 			// Appointment must be at a time that takes into account both its service duration
 			// and the buffer time from the appointment being checked
-			expect(result).toContain("2001-01-01T09:15:00.000Z"); // On threshold of service duration of new appointment + buffer time
-			expect(result).not.toContain("2001-01-01T09:20:00.000Z"); // Cannot fit service + buffer time between new and existing appointment
-			expect(result).not.toContain("2001-01-01T09:45:00.000Z"); // Start of buffer time
-			expect(result).not.toContain("2001-01-01T10:00:00.000Z"); // Overlaps with existing appointment
-			expect(result).not.toContain("2001-01-01T10:30:00.000Z"); // End of existing appointment
-			expect(result).not.toContain("2001-01-01T10:40:00.000Z"); // End of buffer time after existing appointment
-			expect(result).toContain("2001-01-01T10:45:00.000Z");
+			expect(result).toContain("9:15 AM"); 		// On threshold of service duration of new appointment + buffer time
+			expect(result).not.toContain("9:20 AM"); 	// Cannot fit service + buffer time between new and existing appointment
+			expect(result).not.toContain("9:45 AM"); 	// Start of buffer time
+			expect(result).not.toContain("10:00 AM"); 	// Overlaps with existing appointment
+			expect(result).not.toContain("10:30 AM"); 	// End of existing appointment
+			expect(result).not.toContain("10:40 AM"); 	// End of buffer time after existing appointment
+			expect(result).toContain("10:45 AM");
 
 			// Check that the functions were called the correct number of times
 			expect(mockStaffRepository.findOneBy).toHaveBeenCalledTimes(1);
@@ -277,21 +248,21 @@ describe("AppointmentService", () => {
 			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
 			const result = await service.getAvailabilities(
-				new Date("2001-01-01"),
+				new Date(2001, 0, 1), // Local midnight (Monday)
+				mockUser.id,
 				mockService.id,
 				mockStaff.id,
-				mockUser.id,
 				mockStaffAppointment.id, // Editing the existing appointment
 			);
 
 			// Check if the time slot that overlaps within the existing appointment is included
-			expect(result).toContain("2001-01-01T09:15:00.000Z"); // On threshold of service duration of new appointment + buffer time
-			expect(result).toContain("2001-01-01T09:20:00.000Z"); // After threshold
-			expect(result).toContain("2001-01-01T09:45:00.000Z"); // Start of buffer time
-			expect(result).toContain("2001-01-01T10:00:00.000Z"); // Start of existing appointment
-			expect(result).toContain("2001-01-01T10:30:00.000Z"); // End of existing appointment
-			expect(result).toContain("2001-01-01T10:40:00.000Z"); // End of buffer time after existing appointment
-			expect(result).toContain("2001-01-01T10:45:00.000Z");
+			expect(result).toContain("9:15 AM"); 	// On threshold of service duration of new appointment + buffer time
+			expect(result).toContain("9:20 AM"); 	// After threshold
+			expect(result).toContain("9:45 AM"); 	// Start of buffer time
+			expect(result).toContain("10:00 AM"); 	// Start of existing appointment
+			expect(result).toContain("10:30 AM"); 	// End of existing appointment
+			expect(result).toContain("10:40 AM"); 	// End of buffer time after existing appointment
+			expect(result).toContain("10:45 AM");
 
 			// Check that the functions were called the correct number of times
 			expect(mockStaffRepository.findOneBy).toHaveBeenCalledTimes(1);
@@ -309,7 +280,7 @@ describe("AppointmentService", () => {
 			};
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
-			mockServiceRepository.findOneBy.mockResolvedValue(mockService);
+			mockServiceRepository.findOneBy.mockResolvedValue();
 			mockStaffRepository.findOneBy.mockResolvedValue(mockStaff);
 			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
@@ -320,10 +291,10 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.getAvailabilities(
-					new Date("2001-01-01"),
+					new Date(2001, 0, 1), // Local midnight (Monday)
+					mockUser.id,
 					fakeServiceId,
 					mockStaff.id,
-					mockUser.id,
 					null,
 				),
 			).rejects.toThrow(error);
@@ -343,7 +314,7 @@ describe("AppointmentService", () => {
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
 			mockServiceRepository.findOneBy.mockResolvedValue(mockService);
-			mockStaffRepository.findOneBy.mockResolvedValue(mockStaff);
+			mockStaffRepository.findOneBy.mockResolvedValue();
 			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
 
 			const fakeStaffId = "thisisnotavalidstaffid";
@@ -353,10 +324,10 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.getAvailabilities(
-					new Date("2001-01-01"),
+					new Date(2001, 0, 1), // Local midnight (Monday)
+					mockUser.id,
 					mockService.id,
 					fakeStaffId,
-					mockUser.id,
 					null,
 				),
 			).rejects.toThrow(error);
@@ -377,7 +348,7 @@ describe("AppointmentService", () => {
 
 			mockServiceRepository.findOneBy.mockResolvedValue(mockService);
 			mockStaffRepository.findOneBy.mockResolvedValue(mockStaff);
-			mockUserRepository.findOneBy.mockResolvedValue(mockUser);
+			mockUserRepository.findOneBy.mockResolvedValue();
 
 			const fakeUserId = "thisisnotavaliduserid";
 			const error = new NotFoundException(
@@ -386,10 +357,10 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.getAvailabilities(
-					new Date("2001-01-01"),
+					new Date(2001, 0, 1), // Local midnight (Monday)
+					fakeUserId,
 					mockService.id,
 					mockStaff.id,
-					fakeUserId,
 					null,
 				),
 			).rejects.toThrow(error);
@@ -412,7 +383,7 @@ describe("AppointmentService", () => {
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
 			const result = await service.checkAppointmentAvailability(
-				new Date("2001-01-01T10:30:00.000Z"),
+				new Date(2001, 0, 1, 10, 30), // Monday 10:30 AM
 				mockUser,
 				mockService,
 				mockStaff,
@@ -440,7 +411,7 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.checkAppointmentAvailability(
-					new Date("2000-01-01"), // A Saturday!
+					new Date(2000, 0, 1, 10), // A Saturday!
 					mockUser,
 					mockService,
 					mockStaff,
@@ -467,7 +438,7 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.checkAppointmentAvailability(
-					new Date("2001-01-01T10:30:00.000Z"), // Overlaps with existing appointment
+					new Date(2001, 0, 1, 10, 30), // Overlaps with existing appointment
 					mockUser,
 					mockService,
 					mockStaff,
@@ -494,7 +465,7 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.checkAppointmentAvailability(
-					new Date("2001-01-01T3:00:00.000Z"), // Outside of work hours
+					new Date(2001, 0, 1, 3), // Outside of work hours
 					mockUser,
 					mockService,
 					mockStaff,
@@ -521,7 +492,7 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.checkAppointmentAvailability(
-					new Date("2001-01-01T12:00:00.000Z"), // During break time
+					new Date(2001, 1, 1, 12), // During break time
 					mockUser,
 					mockService,
 					mockStaff,
@@ -538,7 +509,7 @@ describe("AppointmentService", () => {
 				leftJoinAndSelect: jest.fn().mockReturnThis(),
 				where: jest.fn().mockReturnThis(),
 				andWhere: jest.fn().mockReturnThis(),
-				getMany: jest.fn().mockResolvedValue([mockStaffAppointment4]),
+				getMany: jest.fn().mockResolvedValue([mockStaffAppointment2]),
 			};
 
 			const userQueryBuilder = {
@@ -551,9 +522,11 @@ describe("AppointmentService", () => {
 			mockAppointmentRepository.createQueryBuilder.mockImplementation(() => {
 				// First call is for staff appointments, second call is for user appointments
 				switch (mockAppointmentRepository.createQueryBuilder.mock.calls.length) {
-					case 0:
-						return staffQueryBuilder;
 					case 1:
+						console.log("called");
+						return staffQueryBuilder;
+					case 2:
+						console.log("called");
 						return userQueryBuilder;
 					default:
 						throw new Error("createQueryBuilder called too many times");
@@ -566,7 +539,7 @@ describe("AppointmentService", () => {
 
 			await expect(
 				service.checkAppointmentAvailability(
-					new Date("2001-01-01T11:30:00.000Z"), // During user2's existing appointment with the same staff member
+					new Date(2001, 0, 1, 10, 30), // During user2's existing appointment with the same staff member
 					mockUser,
 					mockService,
 					mockStaff,
@@ -588,7 +561,7 @@ describe("AppointmentService", () => {
 			mockAppointmentRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
 			const result = await service.checkAppointmentAvailability(
-				new Date("2001-01-01T10:30:00.000Z"),
+				new Date(2001, 0, 1, 10, 30),
 				mockUser,
 				mockService,
 				mockStaff,

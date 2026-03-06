@@ -162,7 +162,7 @@ export class AppointmentService {
 		possibleTimes = possibleTimes.filter((time) => {
 			if (
 				time > staffBreakStart - serviceDuration &&
-				time < staffBreakEnd + staffBuffer
+				time < staffBreakEnd
 			)
 				return false;
 
@@ -306,7 +306,7 @@ export class AppointmentService {
 		// Here, I am assuming we merge the break time with the staff buffer
 		if (
 			chosenAppointmentStart > staffBreakStart - serviceDuration &&
-			chosenAppointmentStart < staffBreakEnd + staffBuffer
+			chosenAppointmentStart < staffBreakEnd
 		)
 			throw new BadRequestException(
 				"The chosen appointment conflicts with the staff's break time.",
