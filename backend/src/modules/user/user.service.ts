@@ -219,7 +219,7 @@ export class UserService {
 		});
 		if (!staff)
 			throw new NotFoundException(
-				`Staff could not be found for email ${appointment.staff.id}.`,
+				`Staff could not be found for id ${appointment.staff.id}.`,
 			);
 
 		if (!staff.appointments)

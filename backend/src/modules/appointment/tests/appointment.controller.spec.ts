@@ -93,7 +93,7 @@ describe("AppointmentController", () => {
 			await expect(
 				controller.getAppointments(mockUser, mockAvailabilityDTO),
 			).rejects.toThrow(
-				`Service could not be found for id ${mockAvailabilityDTO.serviceID}.`,
+				error,
 			);
 			expect(mockAppointmentService.getAvailabilities).toHaveBeenCalledTimes(1);
 		});
