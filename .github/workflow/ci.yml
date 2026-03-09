@@ -1,0 +1,82 @@
+name: CI Pipeline
+
+# Triggers
+on: 
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Jobs
+jobs:
+  unit_test:
+    name: Run Unit Tests
+
+    strategy:
+      matrix:
+        service: [frontend, backend]  
+        #node-version: [18, 20, 22]
+        #os: [ubuntu-latest, windows-latest]
+      fail-fast: false      # Doesn't cancel all jobs if one fails
+    #runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout is what copies over the repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          #node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.service }}/package-lock.json
+
+      # NPM CI means "clean install", which does not edit package.json and package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./${{ matrix.service }}
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./${{ matrix.service }}
+
+      - name: Build
+        run: npm run build
+        working-directory: ./${{ matrix.service }}
+        
+  e2e_tests:
+    name: Run E2E Tests
+    needs: unit_test
+    runs-on: ubuntu-latest
+
+    env:
+      BACKEND_PORT: 5554
+      DB_LOGGING: "false"
+      DB_NAME: "db"
+      DB_PASSWORD: "password"
+      DB_PORT: 5432
+      DB_USERNAME: "postgres"
+      JWT_SECRET: "I HAVE A JAR OF DIRT!"
+      NODE_ENV: development
+      SALT_ROUNDS: 10
+      VITE_BACKEND_PORT: 5554
+      VITE_FRONTEND_PORT: 5173
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -d runs it as a background process
+      - name: Docker compose up
+        run: docker-compose up -d --build
+
+      - name: Run database migrations
+        run: docker-compose exec -T backend npm run migrate
+
+      - name: Run backend e2e tests
+        run: docker-compose exec -T backend npm run test:e2e
+
+        
