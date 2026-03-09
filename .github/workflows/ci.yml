@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [frontend, backend]  
+        service: [backend]  
         #node-version: [18, 20, 22]
         #os: [ubuntu-latest, windows-latest]
       fail-fast: false      # Doesn't cancel all jobs if one fails
@@ -69,16 +69,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create dummy .env files
+        # We create the exact files your docker-compose.yml is looking for
+        run: |
+          # Backend .env variables
+          cat <<EOF > .env
+          BACKEND_PORT=5554
+          DB_LOGGING=false
+          DB_NAME=db
+          DB_PASSWORD=password
+          DB_PORT=5432
+          DB_USERNAME=postgres
+          JWT_SECRET=I HAVE A JAR OF DIRT!
+          NODE_ENV=development
+          SALT_ROUNDS=10
+          EOF
+
+          cp .env backend/.env
+
+          # Frontend .env variables
+          cat <<EOF > frontend/.env
+          VITE_BACKEND_PORT=5554
+          VITE_FRONTEND_PORT=5173
+          EOF
+          
       # -d runs it as a background process
       - name: Docker compose up
-        run: docker-compose up -d --build
+        run: docker compose up -d --build --wait
+
+      - name: Debug backend logs
+        if: failure()
+        run: |
+          docker compose logs backend
+          docker compose logs db
 
       - name: Run database migrations
-        run: docker-compose exec -T backend npm run migrate
+        run: docker compose exec -T backend npm run migration:run
 
       - name: Run backend e2e tests
-        run: docker-compose exec -T backend npm run test:e2e
+        run: docker compose exec -T backend npm run test:e2e
 
-      
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
+
 
         

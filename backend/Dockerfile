@@ -15,4 +15,5 @@ EXPOSE ${BACKEND_PORT}
 CMD npm run start:dev
 
 # Health check for frontend to wait
-HEALTHCHECK CMD curl -f http://localhost:${BACKEND_PORT}/api/health || exit 1
+HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:${BACKEND_PORT}/api/health || exit 1

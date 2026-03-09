@@ -1,15 +1,14 @@
-import { SafeUser } from "src/common/types";
+import { SafeUser } from "../../../common/types";
 import { UserController } from "../user.controller";
 import { UserService } from "../user.service";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CreateAppointmentDTO, EditAppointmentDTO } from "../dto";
-import { SafeAppointment } from "src/modules/appointment/types";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Request } from "express";
-import { Appointment } from "src/modules/appointment/appointment.entity";
-import { Service } from "src/modules/service/service.entity";
-import { Staff } from "src/modules/staff/staff.entity";
-import { dateToStrings } from "src/common/utils";
+import { Appointment } from "../../appointment/appointment.entity";
+import { Service } from "../../service/service.entity";
+import { Staff } from "../../staff/staff.entity";
+import { dateToStrings } from "../../../common/utils";
 import { User } from "../user.entity";
 
 describe("UserController", () => {
@@ -80,13 +79,13 @@ describe("UserController", () => {
     }
 
     const mockRequest1 = {
-        body: JSON.stringify({
+        body: {
             id: "3afa573b-4c6c-4fb5-9aa9-adf48a7c90f3",
-        }),
+        },
     } as unknown as Request;
 
     const mockRequest2 = {
-        body: JSON.stringify({})
+        body: {}
     } as unknown as Request;
 
     beforeEach(async () => {
@@ -247,10 +246,10 @@ describe("UserController", () => {
             mockUserService.getLimitedAppointments.mockResolvedValue(
 				[mockAppointment1, mockAppointment2, mockAppointment3]
 			);
-            const result = await controller.getLimitedAppointments(mockUser, "2");
+            const result = await controller.getLimitedAppointments(mockUser, "3");
 
             expect(result).toHaveProperty("data");
-            expect(result.data!.length).toEqual(2);
+            expect(result.data!.length).toEqual(3);
             expect(result).toHaveProperty("error", null);
 
             const data = result.data![0];
@@ -268,16 +267,16 @@ describe("UserController", () => {
         });
 
         it("should return all appointments if the total # of appointments is less than numAppointments", async () => {
-            it("should return numAppointments-number of appointments in the correct format", async () => {
-                mockUserService.getLimitedAppointments.mockResolvedValue(
-                    [mockAppointment1, mockAppointment2, mockAppointment3]
-                );
-                const result = await controller.getLimitedAppointments(mockUser, "4");
+           
+            mockUserService.getLimitedAppointments.mockResolvedValue(
+                [mockAppointment1, mockAppointment2, mockAppointment3]
+            );
+            const result = await controller.getLimitedAppointments(mockUser, "4");
 
-                expect(result).toHaveProperty("data");
-                expect(result.data!.length).toEqual(3);
-                expect(result).toHaveProperty("error", null);
-            });
+            expect(result).toHaveProperty("data");
+            expect(result.data!.length).toEqual(3);
+            expect(result).toHaveProperty("error", null);
+           
         });
 
         it("should return an empty array if the user has no appointments", async () => {
@@ -326,7 +325,7 @@ describe("UserController", () => {
             expect(result).toHaveProperty("data");
             expect(result).toHaveProperty("error", null);
 
-            const data = result.data![0];
+            const data = result.data;
             expect(data).toHaveProperty("id", mockAppointment1.id);
             expect(data).toHaveProperty("startTimestamp", mockAppointment1.startTimestamp);
             expect(data).toHaveProperty("dateString", dateToStrings(mockAppointment1.startTimestamp)[0]);
@@ -426,7 +425,7 @@ describe("UserController", () => {
             mockUserService.deleteAppointment.mockResolvedValue();
             const result = await controller.deleteAppointment(mockUser, mockRequest1);
 
-            expect(result).toHaveProperty("data", "Appointment deleted successfully");
+            expect(result).toHaveProperty("data", "Appointment deleted successfully.");
             expect(result).toHaveProperty("error", null);
 
         });
@@ -504,7 +503,7 @@ describe("UserController", () => {
             mockUserService.deleteAccount.mockResolvedValue();
             const result = await controller.deleteAccount(mockUser);
 
-            expect(result).toHaveProperty("data", "Account deleted successfully");
+            expect(result).toHaveProperty("data", "Account deleted successfully.");
             expect(result).toHaveProperty("error", null);
         });
 

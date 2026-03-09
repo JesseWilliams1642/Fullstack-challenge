@@ -214,8 +214,6 @@ describe("AppointmentService", () => {
 				null,
 			);
 
-			console.log(result);
-
 			// Overlap with appointment and buffer period
 			// Appointment must be at a time that takes into account both its service duration
 			// and the buffer time from the appointment being checked

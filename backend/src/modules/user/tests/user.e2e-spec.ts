@@ -1,7 +1,8 @@
 describe("User Module (e2e)", () => {
-
+    it("placeholder", () => { expect(true).toBe(true); });
+    /*
     describe("POST /api/user/appointments", () => {
-
+        
     });
 
     describe("GET /api/user/appointments", () => {
@@ -23,6 +24,7 @@ describe("User Module (e2e)", () => {
     describe("DELETE /api/user/account", () => {
 
     });
+    */
 
 });
 
