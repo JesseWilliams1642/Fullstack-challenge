@@ -96,21 +96,10 @@ export class UserService {
 		if (returnSize < 0)
 			throw new BadRequestException("Id should be a positive integer.");
 
-		const user: User | null = await this.userRepository.findOne({
-			where: { email: email },
-			relations: ["appointments", "appointments.staff", "appointments.service"],
-		});
-		if (!user)
-			throw new NotFoundException(`User could not be found for email ${email}.`);
+		const sortedAppointments: Appointment[] = await this.getAppointments(email);
 
-		user.appointments = user.appointments || [];
-		if (user.appointments.length < returnSize)
-			returnSize = (user.appointments || []).length;
-
-		const sortedAppointments: Appointment[] = user.appointments.sort(
-			(a, b) =>
-				new Date(a.startTimestamp).getTime() - new Date(b.startTimestamp).getTime(),
-		);
+		if (sortedAppointments.length < returnSize)
+			returnSize = (sortedAppointments || []).length;
 
 		const appointmentList: Appointment[] = [];
 		for (let i = 0; i < returnSize; i++)
@@ -144,14 +133,11 @@ export class UserService {
 		if (!appointment)
 			throw new ForbiddenException("Appointment is not owned by the User");
 
-		if (!dto.serviceID && !dto.staffID && !dto.startDate)
-			throw new BadRequestException("Request needs at least one changed attribute.");
-
 		// Get the new service/staff member if an ID is in the request
 		// Else, use the old values
 
 		let service: Service | null = null;
-		if (dto.serviceID) {
+		if (dto.serviceID != appointment.service.id) {
 			service = await this.serviceRepository.findOneBy({ id: dto.serviceID });
 			if (!service)
 				throw new NotFoundException(
@@ -160,7 +146,7 @@ export class UserService {
 		} else service = appointment.service;
 
 		let staff: Staff | null = null;
-		if (dto.staffID) {
+		if (dto.staffID != appointment.staff.id) {
 			staff = await this.staffRepository.findOneBy({ id: dto.staffID });
 			if (!staff)
 				throw new NotFoundException(`Staff could not be found for id ${dto.staffID}.`);
@@ -239,6 +225,8 @@ export class UserService {
 
 		// Remove appointment
 		await this.appointmentRepository.delete(appointment);
+
+		return;
 	}
 
 	async deleteAccount(email: string): Promise<void> {
@@ -257,5 +245,6 @@ export class UserService {
 
 		// Delete user
 		await this.userRepository.delete({ id: user.id });
+		return;
 	}
 }
