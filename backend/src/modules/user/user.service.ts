@@ -123,7 +123,7 @@ export class UserService {
 		if (!user)
 			throw new NotFoundException(`User could not be found for email ${email}.`);
 
-		if (!user.appointments)
+		if (!user.appointments || user.appointments.length === 0)
 			throw new BadRequestException("User does not contain any appointments.");
 
 		let appointment: Appointment | null = null;
@@ -185,7 +185,7 @@ export class UserService {
 		if (!user)
 			throw new NotFoundException(`User could not be found for email ${email}.`);
 
-		if (!user.appointments)
+		if (!user.appointments || user.appointments.length === 0)
 			throw new BadRequestException("User does not contain any appointments.");
 
 		let appointment: Appointment | null = null;
@@ -208,7 +208,7 @@ export class UserService {
 				`Staff could not be found for id ${appointment.staff.id}.`,
 			);
 
-		if (!staff.appointments)
+		if (!staff.appointments || staff.appointments.length === 0)
 			throw new NotFoundException("Staff does not contain any appointments.");
 
 		// Remove appointment from user

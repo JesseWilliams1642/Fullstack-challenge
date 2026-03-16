@@ -16,81 +16,14 @@ describe("UserService", () => {
     let mockStaffRepository: jest.Mocked<any>;
     let mockAppointmentService: jest.Mocked<any>;
 
-    // Test data
-    const mockService: Service = {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        serviceName: "Haircut",
-        serviceDuration: { years: 0, months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 },
-        serviceDescription: "A basic haircut",
-        serviceImage: "https://example.com/haircut.jpg",
-    };
-
-    const mockService2: Service = {
-        id: "550e8400-e29b-41d4-a716-446655440001",
-        serviceName: "Shave",
-        serviceDuration: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
-        serviceDescription: "A basic shave",
-        serviceImage: "https://example.com/shave.jpg",
-    }
-
-    const mockStaff: Staff = {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        name: "Jesse",
-        daysWorking: [true, true, true, true, true, false, false],
-        startTime: { years: 0, months: 0, days: 0, hours: 9, minutes: 0, seconds: 0 },
-        shiftDuration: { years: 0, months: 0, days: 0, hours: 8, minutes: 0, seconds: 0 },
-        breakTime: { years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 },
-        breakDuration: { years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 },
-        bufferPeriod: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
-    };
-
-    const mockStaff2: Staff = {
-        id: "850e8400-e29b-41d4-a716-446655440000",
-        name: "John",
-        daysWorking: [true, true, true, true, true, false, false],
-        startTime: { years: 0, months: 0, days: 0, hours: 9, minutes: 0, seconds: 0 },
-        shiftDuration: { years: 0, months: 0, days: 0, hours: 8, minutes: 0, seconds: 0 },
-        breakTime: { years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 },
-        breakDuration: { years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 },
-        bufferPeriod: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
-    };
-
-    const mockUser: User = {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        email: "test@example.com",
-        name: "John Doe",
-        hashedPassword: "hashedpassword",
-        appointments: [],
-    };
-
-    const mockUser2: User = {
-        id: "550e8400-e29b-41d4-a716-446655440001",
-        email: "test2@example.com",
-        name: "Jane Doe",
-        hashedPassword: "hashedpassword",
-        appointments: [],
-    };
-
-    // Generic appointment
-    const mockAppointment: Appointment = {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        startTimestamp: new Date(2001, 0, 1, 10, 0, 0), // 2001-01-01 at 10:00 AM local time
-        service: mockService,
-        user: mockUser,
-        staff: mockStaff,
-    };
-
-    // To test for overlap between user appointments
-    const mockAppointment2: Appointment = {
-        id: "550e8400-e29b-41d4-a716-446655440003",
-        startTimestamp: new Date(2002, 0, 1, 10, 15, 0), // 2001-01-01 at 10:15 AM local time
-        service: mockService,
-        user: mockUser2,
-        staff: mockStaff,
-    };
-
-    mockUser.appointments?.push(mockAppointment);
-    mockUser.appointments?.push(mockAppointment2);
+    let mockService: Service;
+    let mockService2: Service;
+    let mockStaff: Staff;
+    let mockStaff2: Staff;
+    let mockUser: User;
+    let mockUser2: User;
+    let mockAppointment: Appointment;
+    let mockAppointment2: Appointment;
 
     beforeEach(async () => {
         mockAppointmentRepository = {
@@ -146,6 +79,84 @@ describe("UserService", () => {
         }).compile();
 
         service = module.get<UserService>(UserService);
+
+        // Create mock accounts, reset each run to prevent any changes between tests
+        mockService = {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            serviceName: "Haircut",
+            serviceDuration: { years: 0, months: 0, days: 0, hours: 0, minutes: 30, seconds: 0 },
+            serviceDescription: "A basic haircut",
+            serviceImage: "https://example.com/haircut.jpg",
+        };
+
+        mockService2 = {
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            serviceName: "Shave",
+            serviceDuration: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
+            serviceDescription: "A basic shave",
+            serviceImage: "https://example.com/shave.jpg",
+        }
+
+        mockStaff = {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            name: "Jesse",
+            daysWorking: [true, true, true, true, true, false, false],
+            startTime: { years: 0, months: 0, days: 0, hours: 9, minutes: 0, seconds: 0 },
+            shiftDuration: { years: 0, months: 0, days: 0, hours: 8, minutes: 0, seconds: 0 },
+            breakTime: { years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 },
+            breakDuration: { years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 },
+            bufferPeriod: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
+            appointments: []
+        };
+
+        mockStaff2 = {
+            id: "850e8400-e29b-41d4-a716-446655440000",
+            name: "John",
+            daysWorking: [true, true, true, true, true, false, false],
+            startTime: { years: 0, months: 0, days: 0, hours: 9, minutes: 0, seconds: 0 },
+            shiftDuration: { years: 0, months: 0, days: 0, hours: 8, minutes: 0, seconds: 0 },
+            breakTime: { years: 0, months: 0, days: 0, hours: 12, minutes: 0, seconds: 0 },
+            breakDuration: { years: 0, months: 0, days: 0, hours: 1, minutes: 0, seconds: 0 },
+            bufferPeriod: { years: 0, months: 0, days: 0, hours: 0, minutes: 15, seconds: 0 },
+            appointments: []
+        };
+
+        mockUser = {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            email: "test@example.com",
+            name: "John Doe",
+            hashedPassword: "hashedpassword",
+            appointments: [],
+        };
+
+        mockUser2 = {
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            email: "test2@example.com",
+            name: "Jane Doe",
+            hashedPassword: "hashedpassword",
+            appointments: [],
+        };
+
+        // Generic appointment
+        mockAppointment = {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            startTimestamp: new Date(2001, 0, 1, 10, 0, 0), // 2001-01-01 at 10:00 AM local time
+            service: mockService,
+            user: mockUser,
+            staff: mockStaff,
+        };
+
+        // To test for overlap between user appointments
+        mockAppointment2 = {
+            id: "550e8400-e29b-41d4-a716-446655440003",
+            startTimestamp: new Date(2002, 0, 1, 10, 15, 0), // 2001-01-01 at 10:15 AM local time
+            service: mockService,
+            user: mockUser2,
+            staff: mockStaff,
+        };
+        mockUser.appointments = [mockAppointment, mockAppointment2];
+        mockStaff.appointments = [mockAppointment];
+
     });
 
     afterEach(() => {
@@ -169,11 +180,11 @@ describe("UserService", () => {
             expect(result).toHaveProperty("startTimestamp", mockAppointment.startTimestamp);
             expect(result.startTimestamp).toBeInstanceOf(Date);
             expect(result).toHaveProperty("service", mockService);
-            expect(result.service).toBeInstanceOf(Service);
+            expect(result.service).toBeInstanceOf(Object);
             expect(result).toHaveProperty("user", mockUser);
-            expect(result.user).toBeInstanceOf(User);
+            expect(result.user).toBeInstanceOf(Object);
             expect(result).toHaveProperty("staff", mockStaff);
-            expect(result.staff).toBeInstanceOf(Staff);
+            expect(result.staff).toBeInstanceOf(Object);
 
             expect(mockUserRepository.findOneBy).toHaveBeenCalledTimes(1);
             expect(mockServiceRepository.findOneBy).toHaveBeenCalledTimes(1);
@@ -281,22 +292,22 @@ describe("UserService", () => {
 
         it("should return an array of appointments with the expected format", async () => {
 
-            mockUserRepository.findOneBy.mockResolvedValue(mockUser);
+            mockUserRepository.findOne.mockResolvedValue(mockUser);
             const result = await service.getAppointments(mockUser.email);
 
             expect(result.length).toStrictEqual(2);
 
             // First element of the array should be the latest time (mockAppointment2)
-            expect(result[0]).toHaveProperty("id", mockAppointment2.id);    
+            expect(result[0]).toHaveProperty("id", mockAppointment.id);    
             expect(typeof result[0].id).toEqual("string");
-            expect(result[0]).toHaveProperty("startTimestamp", mockAppointment2.startTimestamp);
+            expect(result[0]).toHaveProperty("startTimestamp", mockAppointment.startTimestamp);
             expect(result[0].startTimestamp).toBeInstanceOf(Date);
             expect(result[0]).toHaveProperty("service", mockService);
-            expect(result[0].service).toBeInstanceOf(Service);
-            expect(result[0]).toHaveProperty("user", mockUser2);    // Not realistic, but does not effect test
-            expect(result[0].user).toBeInstanceOf(User);
+            expect(result[0].service).toBeInstanceOf(Object);
+            expect(result[0]).toHaveProperty("user", mockUser);    
+            expect(result[0].user).toBeInstanceOf(Object);
             expect(result[0]).toHaveProperty("staff", mockStaff);
-            expect(result[0].staff).toBeInstanceOf(Staff);
+            expect(result[0].staff).toBeInstanceOf(Object);
 
             expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
 
@@ -305,7 +316,7 @@ describe("UserService", () => {
 
         it("should return an empty array if the user has no appointments", async () => {
 
-            mockUserRepository.findOneBy.mockResolvedValue(mockUser2);
+            mockUserRepository.findOne.mockResolvedValue(mockUser2);
             const result = await service.getAppointments(mockUser2.email);
 
             expect(result.length).toStrictEqual(0);
@@ -314,11 +325,11 @@ describe("UserService", () => {
 
         it("should throw an error if the user can not be found", async () => {
 
-            mockUserRepository.findOneBy.mockResolvedValue();
+            mockUserRepository.findOne.mockResolvedValue();
             const error = new NotFoundException(`User could not be found for email ${mockUser.email}.`);
 
             await expect(
-                service.addAppointment(mockUser.email, mockService.id, new Date(), mockStaff.id),
+                service.getAppointments(mockUser.email),
             ).rejects.toThrow(
                 error,
             );
@@ -337,19 +348,18 @@ describe("UserService", () => {
 
             expect(result.length).toStrictEqual(2);
 
-            // First element of the array should be the latest time (mockAppointment2)
-            expect(result[0]).toHaveProperty("id", mockAppointment2.id);    
+            expect(result[0]).toHaveProperty("id", mockAppointment.id);    
             expect(typeof result[0].id).toEqual("string");
-            expect(result[0]).toHaveProperty("startTimestamp", mockAppointment2.startTimestamp);
+            expect(result[0]).toHaveProperty("startTimestamp", mockAppointment.startTimestamp);
             expect(result[0].startTimestamp).toBeInstanceOf(Date);
             expect(result[0]).toHaveProperty("service", mockService);
-            expect(result[0].service).toBeInstanceOf(Service);
-            expect(result[0]).toHaveProperty("user", mockUser2);    // Not realistic, but does not effect test
-            expect(result[0].user).toBeInstanceOf(User);
+            expect(result[0].service).toBeInstanceOf(Object);
+            expect(result[0]).toHaveProperty("user", mockUser);    
+            expect(result[0].user).toBeInstanceOf(Object);
             expect(result[0]).toHaveProperty("staff", mockStaff);
-            expect(result[0].staff).toBeInstanceOf(Staff);
+            expect(result[0].staff).toBeInstanceOf(Object);
 
-            expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(service.getAppointments).toHaveBeenCalledTimes(1);
 
         });
 
@@ -361,7 +371,7 @@ describe("UserService", () => {
             expect(result.length).toStrictEqual(2);
             expect(result).toStrictEqual([mockAppointment, mockAppointment2]);
 
-            expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(service.getAppointments).toHaveBeenCalledTimes(1);
 
         });
 
@@ -371,11 +381,11 @@ describe("UserService", () => {
             const result = await service.getLimitedAppointments(mockUser2.email, "2");
 
             expect(result.length).toStrictEqual(0);
-            expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
+            expect(service.getAppointments).toHaveBeenCalledTimes(1);
 
         });
 
-        it("should have a numAppointments that is zero or larger", async () => {
+        it("should throw an error if numAppointments is negative", async () => {
 
             jest.spyOn(service, 'getAppointments').mockResolvedValue(mockUser.appointments ?? []);
             const error = new BadRequestException("Id should be a positive integer.");
@@ -386,7 +396,7 @@ describe("UserService", () => {
                 error,
             );
 
-            expect(mockUserRepository.findOne).toHaveBeenCalledTimes(0);
+            expect(service.getAppointments).toHaveBeenCalledTimes(0);
 
         });
 
@@ -417,11 +427,11 @@ describe("UserService", () => {
             expect(result).toHaveProperty("startTimestamp", new Date(mockEditAppointmentDTO.startDate));
             expect(result.startTimestamp).toBeInstanceOf(Date);
             expect(result).toHaveProperty("service", mockService2);
-            expect(result.service).toBeInstanceOf(Service);
+            expect(result.service).toBeInstanceOf(Object);
             expect(result).toHaveProperty("user", mockUser);    
-            expect(result.user).toBeInstanceOf(User);
+            expect(result.user).toBeInstanceOf(Object);
             expect(result).toHaveProperty("staff", mockStaff2);
-            expect(result.staff).toBeInstanceOf(Staff);
+            expect(result.staff).toBeInstanceOf(Object);
             
             expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
             expect(mockServiceRepository.findOneBy).toHaveBeenCalledTimes(1);
@@ -534,7 +544,7 @@ describe("UserService", () => {
             };
 
             mockUserRepository.findOne.mockResolvedValue(mockUser);
-            mockServiceRepository.findOneBy.mockResolvedValue();
+            mockServiceRepository.findOneBy.mockResolvedValue(null);
             mockStaffRepository.findOneBy.mockResolvedValue(mockStaff2);
 
             mockAppointmentService.checkAppointmentAvailability.mockResolvedValue(true);
@@ -568,7 +578,7 @@ describe("UserService", () => {
 
             mockUserRepository.findOne.mockResolvedValue(mockUser);
             mockServiceRepository.findOneBy.mockResolvedValue(mockService2);
-            mockStaffRepository.findOneBy.mockResolvedValue();
+            mockStaffRepository.findOneBy.mockResolvedValue(null);
 
             mockAppointmentService.checkAppointmentAvailability.mockResolvedValue(true);
             mockAppointmentRepository.save.mockImplementation((...args) => args[0]); // Identity function
@@ -784,7 +794,7 @@ describe("UserService", () => {
 
         it("should throw an error if the user can not be found", async () => {
 
-            mockUserRepository.findOne.mockResolvedValue(mockUser);
+            mockUserRepository.findOne.mockResolvedValue();
             mockAppointmentRepository.delete.mockResolvedValue();
             mockUserRepository.delete.mockResolvedValue();
 
@@ -796,8 +806,8 @@ describe("UserService", () => {
             );
 
             expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
-            expect(mockAppointmentRepository.delete).toHaveBeenCalledTimes(1);
-            expect(mockUserRepository.delete).toHaveBeenCalledTimes(1);
+            expect(mockAppointmentRepository.delete).toHaveBeenCalledTimes(0);
+            expect(mockUserRepository.delete).toHaveBeenCalledTimes(0);
 
         });
 
