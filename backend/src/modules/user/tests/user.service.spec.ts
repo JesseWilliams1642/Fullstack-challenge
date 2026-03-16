@@ -1,10 +1,10 @@
-import { Service } from "src/modules/service/service.entity";
+import { Service } from "../../service/service.entity";
 import { UserService } from "../user.service";
-import { Staff } from "src/modules/staff/staff.entity";
+import { Staff } from "../../staff/staff.entity";
 import { User } from "../user.entity";
-import { Appointment } from "src/modules/appointment/appointment.entity";
+import { Appointment } from "../../appointment/appointment.entity";
 import { Test, TestingModule } from "@nestjs/testing";
-import { AppointmentService } from "src/modules/appointment/appointment.service";
+import { AppointmentService } from "../../appointment/appointment.service";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { EditAppointmentDTO } from "../dto";
 
