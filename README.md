@@ -1,4 +1,9 @@
 # Fullstack developer Challenge - Appointment Booking System
+## **To-Do:**
+* Jest Unit tests (controllers, services) and E2E tests (APIs) for user/appointments 
+* Use CSS files instead of inline CSS (convert to Tailwind, possibly?)
+* Automated frontend testing using Storybook
+* Set up README
 
 Dear Developer,
 
